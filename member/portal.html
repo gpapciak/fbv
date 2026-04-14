@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Finca Buena Vida — Member Portal" />
+  <meta name="robots" content="noindex, nofollow" />
+  <title>Member Portal — Finca Buena Vida</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="../styles.css" />
+  <link rel="stylesheet" href="member.css" />
+</head>
+<body class="portal-body">
+
+<!-- =====================================================
+     PORTAL LAYOUT
+     ===================================================== -->
+<div class="portal-layout">
+
+  <!-- ---- SIDEBAR ---- -->
+  <aside class="portal-sidebar" id="portal-sidebar" aria-label="Portal navigation">
+
+    <div class="sidebar-logo">
+      <span class="sidebar-logo-name">Finca Buena Vida</span>
+      <span class="sidebar-logo-sub">Member Portal</span>
+    </div>
+
+    <div class="sidebar-member-info" id="sidebar-member-info">
+      <div class="member-avatar" id="sidebar-avatar" aria-hidden="true">?</div>
+      <div class="member-meta">
+        <span class="member-name" id="sidebar-name">Loading…</span>
+        <span class="member-lots" id="sidebar-lots"></span>
+      </div>
+    </div>
+
+    <nav class="sidebar-nav" aria-label="Portal sections">
+      <ul>
+        <li>
+          <button class="nav-item active" data-tab="dashboard" aria-current="page">
+            <svg class="nav-icon" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+              <path d="M3 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V4zm0 6a1 1 0 011-1h5a1 1 0 011 1v6a1 1 0 01-1 1H4a1 1 0 01-1-1v-6zm9 0a1 1 0 011-1h3a1 1 0 011 1v2a1 1 0 01-1 1h-3a1 1 0 01-1-1v-2zm0 5a1 1 0 011-1h3a1 1 0 011 1v1a1 1 0 01-1 1h-3a1 1 0 01-1-1v-1z"/>
+            </svg>
+            Dashboard
+          </button>
+        </li>
+        <li>
+          <button class="nav-item" data-tab="dues">
+            <svg class="nav-icon" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+              <path d="M4 4a2 2 0 00-2 2v4a2 2 0 002 2V6h10a2 2 0 00-2-2H4zm2 6a2 2 0 012-2h8a2 2 0 012 2v4a2 2 0 01-2 2H8a2 2 0 01-2-2v-4zm6 4a2 2 0 100-4 2 2 0 000 4z"/>
+            </svg>
+            Dues
+          </button>
+        </li>
+        <li>
+          <button class="nav-item" data-tab="directory">
+            <svg class="nav-icon" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+              <path d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM14 15a4 4 0 00-8 0v1h8v-1zM6 8a2 2 0 11-4 0 2 2 0 014 0zM16 18v-1a4 4 0 00-1.28-2.947A5.978 5.978 0 0118 17v1h-2zM4 18v-1a5.978 5.978 0 012.28-2.947A4 4 0 004 17v1H2v-1h2z"/>
+            </svg>
+            Directory
+          </button>
+        </li>
+        <li>
+          <button class="nav-item" data-tab="documents">
+            <svg class="nav-icon" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+              <path fill-rule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z" clip-rule="evenodd"/>
+            </svg>
+            Documents
+          </button>
+        </li>
+        <li>
+          <button class="nav-item" data-tab="board">
+            <svg class="nav-icon" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+              <path d="M2 5a2 2 0 012-2h7a2 2 0 012 2v4a2 2 0 01-2 2H9l-3 3v-3H4a2 2 0 01-2-2V5z"/>
+              <path d="M15 7v2a4 4 0 01-4 4H9.828l-1.766 1.767c.28.149.599.233.938.233h2l3 3v-3h2a2 2 0 002-2V9a2 2 0 00-2-2h-1z"/>
+            </svg>
+            Board
+          </button>
+        </li>
+        <li>
+          <button class="nav-item" data-tab="listing">
+            <svg class="nav-icon" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+              <path fill-rule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd"/>
+            </svg>
+            My Listing
+          </button>
+        </li>
+      </ul>
+    </nav>
+
+    <div class="sidebar-footer">
+      <div class="sidebar-divider"></div>
+      <a href="/" class="sidebar-link">
+        <svg class="nav-icon" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+          <path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z"/>
+        </svg>
+        Main Site
+      </a>
+      <button class="sidebar-link sidebar-logout" id="logout-btn">
+        <svg class="nav-icon" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+          <path fill-rule="evenodd" d="M3 3a1 1 0 00-1 1v12a1 1 0 102 0V4a1 1 0 00-1-1zm10.293 9.293a1 1 0 001.414 1.414l3-3a1 1 0 000-1.414l-3-3a1 1 0 10-1.414 1.414L14.586 9H7a1 1 0 100 2h7.586l-1.293 1.293z" clip-rule="evenodd"/>
+        </svg>
+        Sign Out
+      </button>
+    </div>
+
+  </aside><!-- /sidebar -->
+
+  <!-- ---- MOBILE HEADER ---- -->
+  <header class="mobile-header" aria-label="Mobile navigation">
+    <span class="mobile-logo">Finca Buena Vida</span>
+    <button class="mobile-menu-btn" id="mobile-menu-btn" aria-label="Open navigation" aria-expanded="false">
+      <span></span><span></span><span></span>
+    </button>
+  </header>
+
+  <!-- ---- MAIN CONTENT ---- -->
+  <main class="portal-main" id="portal-main" role="main">
+
+    <!-- Dashboard tab -->
+    <div id="tab-dashboard" class="tab-content active" role="tabpanel" aria-labelledby="nav-dashboard"></div>
+
+    <!-- Dues tab -->
+    <div id="tab-dues" class="tab-content" role="tabpanel" aria-labelledby="nav-dues"></div>
+
+    <!-- Directory tab -->
+    <div id="tab-directory" class="tab-content" role="tabpanel" aria-labelledby="nav-directory"></div>
+
+    <!-- Documents tab -->
+    <div id="tab-documents" class="tab-content" role="tabpanel" aria-labelledby="nav-documents"></div>
+
+    <!-- Board tab -->
+    <div id="tab-board" class="tab-content" role="tabpanel" aria-labelledby="nav-board"></div>
+
+    <!-- My Listing tab -->
+    <div id="tab-listing" class="tab-content" role="tabpanel" aria-labelledby="nav-listing"></div>
+
+  </main><!-- /portal-main -->
+
+</div><!-- /portal-layout -->
+
+<!-- =====================================================
+     MODALS
+     ===================================================== -->
+
+<!-- Payment modal -->
+<div id="payment-modal" class="modal" role="dialog" aria-modal="true" aria-labelledby="payment-modal-title" hidden>
+  <div class="modal-overlay"></div>
+  <div class="modal-box">
+    <div class="modal-header">
+      <h2 class="modal-title" id="payment-modal-title">Pay Dues</h2>
+      <button class="modal-close" aria-label="Close">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div class="payment-summary">
+        <div class="payment-row">
+          <span>Annual dues</span>
+          <span id="pay-base-amount">—</span>
+        </div>
+        <div class="payment-row">
+          <span>Processing fee (2.9% + $0.30)</span>
+          <span id="pay-fee-amount">—</span>
+        </div>
+        <div class="payment-row payment-total">
+          <span>Total charged</span>
+          <span id="pay-total-amount">—</span>
+        </div>
+      </div>
+      <p class="payment-note">Card payments include a processing fee passed through to the payer. To avoid the fee, pay by wire transfer or check — see instructions below the dues table.</p>
+      <form id="payment-form" novalidate>
+        <input type="hidden" id="pay-due-id" />
+        <input type="hidden" id="pay-amount-cents" />
+        <input type="hidden" id="pay-owner-email" />
+        <div class="form-field">
+          <label>Card details</label>
+          <div id="card-element" class="card-element-box"></div>
+        </div>
+        <div id="payment-error" class="login-error" role="alert" aria-live="polite" hidden></div>
+        <button type="submit" class="btn-pay" id="pay-submit">
+          Pay Now
+        </button>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Upload document modal (admin) -->
+<div id="upload-modal" class="modal" role="dialog" aria-modal="true" aria-labelledby="upload-modal-title" hidden>
+  <div class="modal-overlay"></div>
+  <div class="modal-box">
+    <div class="modal-header">
+      <h2 class="modal-title" id="upload-modal-title">Upload Document</h2>
+      <button class="modal-close" aria-label="Close">&times;</button>
+    </div>
+    <div class="modal-body">
+      <form id="upload-form" novalidate>
+        <div class="form-field">
+          <label for="upload-title">Title</label>
+          <input type="text" id="upload-title" placeholder="e.g. Annual Meeting Minutes 2025" required />
+        </div>
+        <div class="form-row">
+          <div class="form-field">
+            <label for="upload-category">Category</label>
+            <select id="upload-category" required>
+              <option value="">Select…</option>
+              <option value="minutes">Meeting Minutes</option>
+              <option value="covenants">Covenants &amp; Rules</option>
+              <option value="financial">Financial Reports</option>
+              <option value="legal">Legal Documents</option>
+              <option value="other">Other</option>
+            </select>
+          </div>
+          <div class="form-field">
+            <label for="upload-year">Year (optional)</label>
+            <input type="number" id="upload-year" placeholder="2025" min="2000" max="2099" />
+          </div>
+        </div>
+        <div class="form-field form-field-check">
+          <label class="toggle-label">
+            <span class="toggle-track">
+              <input type="checkbox" id="upload-ref-only" />
+              <span class="toggle-thumb"></span>
+            </span>
+            Reference only (no file download — show note instead)
+          </label>
+        </div>
+        <div class="form-field" id="upload-ref-note-field" hidden>
+          <label for="upload-ref-note">Reference note</label>
+          <textarea id="upload-ref-note" rows="2" placeholder="e.g. Original on file with HOA attorney"></textarea>
+        </div>
+        <div class="form-field" id="upload-file-field">
+          <label for="upload-file">File</label>
+          <input type="file" id="upload-file" accept=".pdf,.doc,.docx,.xls,.xlsx,.txt,.png,.jpg" />
+        </div>
+        <div id="upload-error" class="login-error" role="alert" aria-live="polite" hidden></div>
+        <button type="submit" class="btn-primary" id="upload-submit">Upload Document</button>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Post announcement modal (admin) -->
+<div id="post-modal" class="modal" role="dialog" aria-modal="true" aria-labelledby="post-modal-title" hidden>
+  <div class="modal-overlay"></div>
+  <div class="modal-box">
+    <div class="modal-header">
+      <h2 class="modal-title" id="post-modal-title">New Announcement</h2>
+      <button class="modal-close" aria-label="Close">&times;</button>
+    </div>
+    <div class="modal-body">
+      <form id="post-form" novalidate>
+        <div class="form-field">
+          <label for="post-title">Title</label>
+          <input type="text" id="post-title" placeholder="Announcement title" required />
+        </div>
+        <div class="form-field">
+          <label for="post-body">Body</label>
+          <textarea id="post-body" rows="5" placeholder="Write your announcement here… (supports **bold** and *italic*)" required></textarea>
+        </div>
+        <div class="form-field form-field-check">
+          <label class="toggle-label">
+            <span class="toggle-track">
+              <input type="checkbox" id="post-pinned" />
+              <span class="toggle-thumb"></span>
+            </span>
+            Pin to top of board
+          </label>
+        </div>
+        <div id="post-error" class="login-error" role="alert" aria-live="polite" hidden></div>
+        <button type="submit" class="btn-primary" id="post-submit">Post Announcement</button>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Add dues invoice modal (admin) -->
+<div id="add-due-modal" class="modal" role="dialog" aria-modal="true" aria-labelledby="add-due-modal-title" hidden>
+  <div class="modal-overlay"></div>
+  <div class="modal-box">
+    <div class="modal-header">
+      <h2 class="modal-title" id="add-due-modal-title">Add Dues Invoice</h2>
+      <button class="modal-close" aria-label="Close">&times;</button>
+    </div>
+    <div class="modal-body">
+      <form id="add-due-form" novalidate>
+        <div class="form-field">
+          <label for="due-owner-email">Owner email</label>
+          <input type="email" id="due-owner-email" placeholder="owner@example.com" required />
+          <span class="field-hint">Must match an existing owner account</span>
+        </div>
+        <div class="form-row">
+          <div class="form-field">
+            <label for="due-year">Year</label>
+            <input type="number" id="due-year" placeholder="2025" min="2000" max="2099" required />
+          </div>
+          <div class="form-field">
+            <label for="due-amount">Amount (USD)</label>
+            <input type="number" id="due-amount" placeholder="500.00" min="1" step="0.01" required />
+          </div>
+        </div>
+        <div class="form-field">
+          <label for="due-date">Due date</label>
+          <input type="date" id="due-date" required />
+        </div>
+        <div id="add-due-error" class="login-error" role="alert" aria-live="polite" hidden></div>
+        <button type="submit" class="btn-primary" id="add-due-submit">Create Invoice</button>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Toast notification -->
+<div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+<!-- =====================================================
+     SCRIPTS
+     ===================================================== -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://js.stripe.com/v3/"></script>
+<script src="config.js"></script>
+<script src="member.js"></script>
+
+</body>
+</html>

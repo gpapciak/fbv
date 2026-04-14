@@ -1,0 +1,134 @@
+{
+  "lots": [
+    {
+      "id": 1, "status": "available", "acres": 2.8, "type": "oceanfront",
+      "description": "Northwest corner oceanfront lot. Direct bay and reef access, trade wind exposure all day.",
+      "price": "$175,000",
+      "svgPath": "M 115 56 L 192 44 L 232 65 L 215 90 L 170 88 L 126 75 Z"
+    },
+    {
+      "id": 2, "status": "for-sale", "acres": 2.2, "type": "oceanfront",
+      "description": "Western shore lot with direct ocean frontage. Mature jungle to the east, bay to the west.",
+      "price": "$155,000",
+      "svgPath": "M 122 77 L 170 90 L 215 92 L 228 115 L 205 127 L 152 118 L 112 99 Z"
+    },
+    {
+      "id": 3, "status": "owner-occupied", "acres": 2.0, "type": "oceanfront",
+      "svgPath": "M 108 101 L 152 120 L 205 129 L 222 152 L 197 163 L 145 156 L 103 130 Z"
+    },
+    {
+      "id": 4, "status": "owner-occupied", "acres": 2.1, "type": "oceanfront",
+      "svgPath": "M 100 132 L 145 158 L 197 165 L 217 192 L 190 204 L 136 196 L 96 163 Z"
+    },
+    {
+      "id": 5, "status": "owner-occupied", "acres": 2.3, "type": "oceanfront",
+      "svgPath": "M 93 165 L 136 198 L 190 206 L 210 232 L 174 248 L 126 238 L 87 217 Z"
+    },
+    {
+      "id": 6, "status": "owner-occupied", "acres": 4.1, "type": "oceanview",
+      "svgPath": "M 285 63 L 390 62 L 426 97 L 416 160 L 364 192 L 303 185 L 258 150 L 256 108 Z"
+    },
+    {
+      "id": 7, "status": "for-sale", "acres": 3.8, "type": "oceanview",
+      "description": "Large upper lot with sweeping views across Dolphin Bay. Elevated ridge position with constant breezes.",
+      "price": "$195,000",
+      "svgPath": "M 482 50 L 602 56 L 648 87 L 641 133 L 585 146 L 523 136 L 474 98 L 474 66 Z"
+    },
+    {
+      "id": 8, "status": "owner-occupied", "acres": 2.6, "type": "oceanview",
+      "svgPath": "M 523 138 L 585 148 L 643 134 L 655 184 L 623 218 L 553 213 L 508 177 Z"
+    },
+    {
+      "id": 9, "status": "owner-occupied", "acres": 2.4, "type": "oceanview",
+      "svgPath": "M 506 179 L 553 215 L 625 220 L 641 266 L 606 293 L 543 282 L 500 246 Z"
+    },
+    {
+      "id": 10, "status": "for-sale", "acres": 2.9, "type": "jungle",
+      "description": "Interior jungle lot on the elevated central ridge. Ancient hardwoods, exceptional canopy cover.",
+      "price": "$105,000",
+      "svgPath": "M 418 175 L 512 180 L 499 249 L 460 292 L 415 242 L 406 197 Z"
+    },
+    {
+      "id": 11, "status": "owner-occupied", "acres": 2.5, "type": "jungle",
+      "svgPath": "M 457 294 L 542 283 L 606 295 L 565 332 L 532 367 L 475 352 L 434 327 Z"
+    },
+    {
+      "id": 12, "status": "owner-occupied", "acres": 1.8, "type": "jungle",
+      "svgPath": "M 306 246 L 401 244 L 418 284 L 372 299 L 312 291 Z"
+    },
+    {
+      "id": 13, "status": "for-rent", "acres": 2.0, "type": "jungle",
+      "description": "Jungle lot with completed rancho-style home. Hammock terrace, outdoor kitchen, canopy immersion.",
+      "rentalLink": "#contact",
+      "svgPath": "M 421 249 L 472 254 L 486 292 L 448 309 L 412 297 L 415 264 Z"
+    },
+    {
+      "id": 14, "status": "owner-occupied", "acres": 2.1, "type": "jungle",
+      "svgPath": "M 374 301 L 416 299 L 448 311 L 447 354 L 405 364 L 363 348 L 343 325 Z"
+    },
+    {
+      "id": 15, "status": "for-sale", "acres": 1.9, "type": "jungle",
+      "description": "Central jungle lot with a seasonal stream running through the lower boundary. Good elevation, easy path access.",
+      "price": "$88,000",
+      "svgPath": "M 318 294 L 376 303 L 344 327 L 330 363 L 288 355 L 280 320 Z"
+    },
+    {
+      "id": 16, "status": "owner-occupied", "acres": 2.2, "type": "jungle",
+      "svgPath": "M 172 315 L 245 305 L 282 322 L 289 358 L 249 370 L 185 362 L 155 340 Z"
+    },
+    {
+      "id": 17, "status": "owner-occupied", "acres": 2.0, "type": "jungle",
+      "svgPath": "M 153 362 L 186 364 L 251 372 L 255 408 L 220 420 L 162 411 L 139 388 Z"
+    },
+    {
+      "id": 18, "status": "owner-occupied", "acres": 1.8, "type": "jungle",
+      "svgPath": "M 136 410 L 163 413 L 222 421 L 224 456 L 195 467 L 143 457 Z"
+    },
+    {
+      "id": 19, "status": "available", "acres": 2.4, "type": "jungle",
+      "description": "Lower south-central lot adjacent to the community common area. Flat terrain, dense vegetation, accessible.",
+      "price": "$80,000",
+      "svgPath": "M 289 356 L 332 364 L 370 348 L 386 390 L 361 411 L 302 404 L 279 380 Z"
+    },
+    {
+      "id": 20, "status": "owner-occupied", "acres": 2.2, "type": "oceanview",
+      "svgPath": "M 560 329 L 610 292 L 647 307 L 648 353 L 620 378 L 572 367 Z"
+    },
+    {
+      "id": 21, "status": "owner-occupied", "acres": 2.0, "type": "oceanview",
+      "svgPath": "M 572 369 L 621 380 L 650 355 L 659 408 L 635 426 L 593 419 L 562 407 Z"
+    },
+    {
+      "id": 22, "status": "owner-occupied", "acres": 2.1, "type": "oceanview",
+      "svgPath": "M 538 372 L 574 371 L 565 409 L 593 421 L 583 450 L 542 448 L 516 429 L 520 396 Z"
+    },
+    {
+      "id": 23, "status": "for-rent", "acres": 2.3, "type": "oceanview",
+      "description": "Completed two-bedroom Caribbean home on the eastern shore. Wraparound deck, private dock, kayaks included.",
+      "rentalLink": "#contact",
+      "svgPath": "M 477 357 L 540 374 L 521 399 L 515 432 L 484 445 L 448 427 L 435 400 L 441 369 Z"
+    },
+    {
+      "id": 24, "status": "for-sale", "acres": 3.0, "type": "oceanfront",
+      "description": "Eastern peninsula oceanfront lot. Dual water exposure — lagoon side and open bay. Exceptional sunrise views.",
+      "price": "$210,000",
+      "svgPath": "M 594 421 L 634 428 L 654 409 L 665 455 L 652 489 L 620 497 L 585 484 L 583 451 Z"
+    },
+    {
+      "id": 25, "status": "owner-occupied", "acres": 2.5, "type": "oceanfront",
+      "svgPath": "M 583 453 L 620 499 L 654 492 L 668 529 L 647 547 L 599 541 L 572 519 L 574 487 Z"
+    },
+    {
+      "id": 26, "status": "owner-occupied", "acres": 1.6, "type": "oceanfront",
+      "svgPath": "M 639 547 L 668 530 L 684 546 L 680 559 L 650 559 Z"
+    }
+  ],
+  "features": {
+    "dock":        { "x": 148, "y": 292, "label": "Community Dock" },
+    "lagoon":      { "x": 462, "y": 278, "label": "Lagoon" },
+    "reef":        { "x": 38,  "y": 195, "label": "Coral Reef" },
+    "dolphinZone": { "x": 62,  "y": 185, "label": "Resident Dolphin Pod" },
+    "cacaoGrove":  { "x": 240, "y": 455, "label": "Cacao Grove" },
+    "slothArea":   { "x": 362, "y": 443, "label": "Sloth Habitat" }
+  }
+}

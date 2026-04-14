@@ -1,0 +1,134 @@
+{
+  "forSale": [
+    {
+      "id": "lot-1",
+      "lotNumber": 1,
+      "title": "Northwest Oceanfront — Lot 1",
+      "type": "oceanfront",
+      "acres": 2.8,
+      "price": "$175,000",
+      "status": "available",
+      "description": "Northwest corner lot with direct bay and reef access. The trade winds hit this lot all day, keeping it 5 degrees cooler than the interior. Swim to the reef from your own shore.",
+      "features": ["Direct bay frontage", "Reef access", "Trade wind exposed", "Corner position"],
+      "contact": "info@fincabuenavida.com",
+      "images": []
+    },
+    {
+      "id": "lot-2",
+      "lotNumber": 2,
+      "title": "Western Shore — Lot 2",
+      "type": "oceanfront",
+      "acres": 2.2,
+      "price": "$155,000",
+      "status": "for-sale",
+      "description": "Western shore oceanfront lot with mature jungle rising immediately to the east. The bay is right there — dolphins surface off this lot regularly. A straightforward, beautiful piece of land.",
+      "features": ["Bay frontage", "Mature jungle", "Dolphin corridor", "Build-ready"],
+      "contact": "info@fincabuenavida.com",
+      "images": []
+    },
+    {
+      "id": "lot-7",
+      "lotNumber": 7,
+      "title": "Elevated Ridge — Lot 7",
+      "type": "oceanview",
+      "acres": 3.8,
+      "price": "$195,000",
+      "status": "for-sale",
+      "description": "The largest available lot on the northern ridge. Sweeping views of Dolphin Bay in three directions. Constant trade breezes. One of the most dramatic buildable positions on the property — the kind of site you build a house around.",
+      "features": ["3.8 acres — largest available", "Three-direction views", "Ridge position", "Trade wind corridor"],
+      "contact": "info@fincabuenavida.com",
+      "images": []
+    },
+    {
+      "id": "lot-10",
+      "lotNumber": 10,
+      "title": "Central Jungle — Lot 10",
+      "type": "jungle",
+      "acres": 2.9,
+      "price": "$105,000",
+      "status": "for-sale",
+      "description": "Interior lot on the elevated central ridge. Ancient hardwoods, full canopy cover, exceptional privacy. Well connected by the main property path. Ideal for a permaculture homestead or off-grid sanctuary with easy trail access to the dock.",
+      "features": ["Ancient hardwoods", "Full canopy", "Ridge elevation", "Path access"],
+      "contact": "info@fincabuenavida.com",
+      "images": []
+    },
+    {
+      "id": "lot-15",
+      "lotNumber": 15,
+      "title": "Stream Lot — Lot 15",
+      "type": "jungle",
+      "acres": 1.9,
+      "price": "$88,000",
+      "status": "for-sale",
+      "description": "Central jungle lot with a seasonal freshwater stream along the lower boundary. Good elevation, easy path access to the community dock. Surrounded by established hardwoods and fruiting cacao.",
+      "features": ["Seasonal stream", "Established cacao nearby", "Path access", "Jungle interior"],
+      "contact": "info@fincabuenavida.com",
+      "images": []
+    },
+    {
+      "id": "lot-19",
+      "lotNumber": 19,
+      "title": "South Common — Lot 19",
+      "type": "jungle",
+      "acres": 2.4,
+      "price": "$80,000",
+      "status": "available",
+      "description": "Lower south-central lot adjacent to the community common area. Flat to gently sloping terrain with dense mature vegetation. The most accessible and affordable entry point into the community.",
+      "features": ["Flat terrain", "Common area access", "Dense vegetation", "Easy build"],
+      "contact": "info@fincabuenavida.com",
+      "images": []
+    },
+    {
+      "id": "lot-24",
+      "lotNumber": 24,
+      "title": "Eastern Peninsula — Lot 24",
+      "type": "oceanfront",
+      "acres": 3.0,
+      "price": "$210,000",
+      "status": "for-sale",
+      "description": "The best of the eastern shore — lagoon on one side, open bay on the other. Exceptional sunrise views across the water. One of the most private positions on the property, at the far eastern reach where the lot tapers toward the water.",
+      "features": ["Dual water exposure", "Lagoon + open bay", "Sunrise views", "Peninsula privacy"],
+      "contact": "info@fincabuenavida.com",
+      "images": []
+    }
+  ],
+  "forRent": [
+    {
+      "id": "rent-13",
+      "lotNumber": 13,
+      "title": "Jungle Rancho — Lot 13",
+      "type": "jungle",
+      "shortDescription": "Open-air jungle home fully immersed in canopy. Hammock terrace, outdoor kitchen, path access to community dock.",
+      "fullDescription": "Wake up inside the canopy. This open-air rancho-style home sits surrounded by mature hardwoods in the central property. Wraparound hammock terrace, outdoor kitchen, and direct trail access to the community dock and reef. Sloths are regular visitors. Available by the week.",
+      "amenities": ["Open-air rancho", "Outdoor kitchen", "Hammock terrace", "Dock access", "Snorkel gear", "Kayaks"],
+      "bookingLink": "#contact",
+      "ownerContact": "info@fincabuenavida.com",
+      "images": []
+    },
+    {
+      "id": "rent-23",
+      "lotNumber": 23,
+      "title": "Waterfront Home — Lot 23",
+      "type": "oceanview",
+      "shortDescription": "Completed two-bedroom Caribbean home on the eastern shore. Wraparound deck over the water, private dock, kayaks included.",
+      "fullDescription": "A proper Caribbean home on the water. Two bedrooms, wraparound deck over the bay, outdoor shower, and a private dock. Dolphins are a regular morning sight. Within easy reach of the reef by kayak. Available by the week or month.",
+      "amenities": ["2 bedrooms", "Wraparound bay deck", "Private dock", "Kayaks", "Snorkel gear", "Outdoor shower"],
+      "bookingLink": "#contact",
+      "ownerContact": "info@fincabuenavida.com",
+      "images": []
+    },
+    {
+      "id": "rent-dolphin-blue",
+      "lotNumber": null,
+      "title": "Dolphin Blue Paradise",
+      "type": "resort",
+      "shortDescription": "An independent eco-lodge operating in the Dolphin Bay area. Contact them directly for rates and availability.",
+      "fullDescription": "Dolphin Blue Paradise is an independent eco-lodge with cabañas, meals, and guided tours. They are not part of the FBV owners association. Contact them directly for bookings.",
+      "amenities": [],
+      "bookingLink": "https://dolphinblueparadise.com",
+      "ownerContact": null,
+      "images": [],
+      "externalOnly": true
+    }
+  ]
+}
