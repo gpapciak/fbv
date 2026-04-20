@@ -408,13 +408,17 @@
     <div class="panel-divider"></div>
     <div class="panel-details">
       <div class="detail-row"><span class="detail-label">Type</span><span class="detail-value" id="panel-detail-type">Shoreline Lot</span></div>
+      <div class="detail-row" id="panel-price-row" hidden><span class="detail-label">Price</span><span class="detail-value" id="panel-price"></span></div>
       <div class="detail-row"><span class="detail-label">Community</span><span class="detail-value">Finca Buena Vida</span></div>
       <div class="detail-row"><span class="detail-label">Island</span><span class="detail-value">Isla San Cristóbal, Panama</span></div>
     </div>
-    <p class="panel-note">Contact us for lot dimensions, pricing, and a private tour of the property.</p>
-    <a class="panel-cta" href="mailto:info@fincabuenavida.com">Inquire About This Lot</a>
+    <p class="panel-note" id="panel-description" hidden></p>
+    <p class="panel-note" id="panel-note"></p>
+    <a class="panel-cta" id="panel-cta" href="mailto:info@fincabuenavida.com">Inquire About This Lot</a>
   </div>
 
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="member/config.js"></script>
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script>
     // ═══════════════════════════════════════════════════════════════
@@ -422,19 +426,38 @@
     // ═══════════════════════════════════════════════════════════════
 
     const STATUS_CONFIG = {
-      'for-sale':      { color: '#2ECC8F', label: 'For Sale' },
-      'not-available': { color: '#8BAFC4', label: 'Not Available' }
+      'for_sale':      { color: '#2ECC8F', label: 'For Sale' },
+      'not_available': { color: '#8BAFC4', label: 'Not Available' }
     };
 
     // Edit these freely — one line per lot
+    // Default statuses — overwritten by Supabase fetch in initMarkers()
     const LOT_STATUS = {
-      S1: 'not-available', S2: 'not-available', S3: 'not-available', S4: 'not-available',
-      S5: 'not-available', S6: 'for-sale',      S7: 'not-available', S8: 'not-available',
-      S9: 'not-available', S10: 'not-available', S11: 'not-available', S12: 'not-available',
-      I1: 'not-available', I2: 'not-available', I3: 'not-available', I4: 'not-available',
-      I5: 'not-available', I6: 'not-available', I7: 'not-available',
-      I9: 'not-available', I10: 'not-available', I11: 'not-available'
+      S1: 'not_available', S2: 'not_available', S3: 'not_available', S4: 'not_available',
+      S5: 'not_available', S6: 'for_sale',      S7: 'not_available', S8: 'not_available',
+      S9: 'not_available', S10: 'not_available', S11: 'not_available', S12: 'not_available',
+      I1: 'not_available', I2: 'not_available', I3: 'not_available', I4: 'not_available',
+      I5: 'not_available', I6: 'not_available', I7: 'not_available',
+      I8: 'not_available', I9: 'not_available', I10: 'not_available', I11: 'not_available'
     };
+
+    // Supabase init (same pattern as member portal)
+    let sb = null;
+    (function () {
+      const cfg = window.FBV_CONFIG || {};
+      if (cfg.supabaseUrl && cfg.supabaseAnonKey &&
+          !cfg.supabaseUrl.includes('your-project-id') &&
+          !cfg.supabaseAnonKey.includes('your-anon-key')) {
+        sb = supabase.createClient(cfg.supabaseUrl, cfg.supabaseAnonKey);
+      }
+    })();
+
+    // lot_number integer → lot name: 106 → "S6", 207 → "I7"
+    function lotIdToName(id) {
+      if (id >= 200 && id <= 299) return 'I' + (id - 200);
+      if (id >= 100 && id <= 199) return 'S' + (id - 100);
+      return null;
+    }
 
     // ═══════════════════════════════════════════════════════════════
     // MAP DATA
@@ -517,8 +540,9 @@
       { name: 'I4',  lat: 9.22298273723634,  lng: -82.26015267127453, type: 'Inland' },
       { name: 'I5',  lat: 9.222486368982464, lng: -82.2612484591159,  type: 'Inland' },
       { name: 'I6',  lat: 9.221589469904156, lng: -82.2614995234366,  type: 'Inland' },
-      { name: 'I7',  lat: 9.220756621775671, lng: -82.26112953239544, type: 'Inland' },
-      { name: 'I9',  lat: 9.221105447627265, lng: -82.26013560351882, type: 'Inland' },
+      { name: 'I7',  lat: 9.220756621775671,  lng: -82.26112953239544, type: 'Inland' },
+      { name: 'I8',  lat: 9.220003800611352,  lng: -82.26097882801442, type: 'Inland' },
+      { name: 'I9',  lat: 9.221105447627265,  lng: -82.26013560351882, type: 'Inland' },
       { name: 'I10', lat: 9.220282548077781, lng: -82.25998749136514, type: 'Inland' },
       { name: 'I11', lat: 9.22036957232393,  lng: -82.25804055976479, type: 'Inland' }
     ];
@@ -601,7 +625,7 @@
       const isShore  = prop.type === 'Shore';
       const size     = isShore ? 36 : 30;
       const half     = size / 2;
-      const isAvail  = status === 'for-sale';
+      const isAvail  = status === 'for_sale';
       const delay    = (index * 0.3).toFixed(1);
 
       let shape;
@@ -634,16 +658,41 @@
       });
     }
 
-    PROPERTIES.forEach((prop, index) => {
-      const status = LOT_STATUS[prop.name] || 'not-available';
-      const cfg    = STATUS_CONFIG[status];
-      const tooltip = `Lot ${prop.name} · ${prop.type} · ${cfg.label}`;
+    function renderMarkers() {
+      PROPERTIES.forEach((prop, index) => {
+        const status  = LOT_STATUS[prop.name] || 'not_available';
+        const cfg     = STATUS_CONFIG[status];
+        const tooltip = `Lot ${prop.name} · ${prop.type} · ${cfg.label}`;
 
-      L.marker([prop.lat, prop.lng], { icon: makeLotIcon(prop, index) })
-        .bindTooltip(tooltip, { permanent: false, direction: 'top' })
-        .on('click', () => openPanel(prop))
-        .addTo(map);
-    });
+        L.marker([prop.lat, prop.lng], { icon: makeLotIcon(prop, index) })
+          .bindTooltip(tooltip, { permanent: false, direction: 'top' })
+          .on('click', () => openPanel(prop))
+          .addTo(map);
+      });
+    }
+
+    async function initMarkers() {
+      if (sb) {
+        try {
+          const { data, error } = await sb
+            .from('lot_listings')
+            .select('lot_number, status');
+          if (!error && data) {
+            data.forEach(row => {
+              const name = lotIdToName(row.lot_number);
+              if (name && Object.prototype.hasOwnProperty.call(LOT_STATUS, name)) {
+                LOT_STATUS[name] = row.status;
+              }
+            });
+          }
+        } catch (e) {
+          console.warn('Map: Supabase status fetch failed, using defaults', e);
+        }
+      }
+      renderMarkers();
+    }
+
+    initMarkers();
 
     // ═══════════════════════════════════════════════════════════════
     // LANDMARK MARKERS
@@ -696,18 +745,68 @@
     // DETAIL PANEL
     // ═══════════════════════════════════════════════════════════════
 
-    const panel     = document.getElementById('lot-detail-panel');
+    const panel      = document.getElementById('lot-detail-panel');
     const panelClose = document.getElementById('panel-close');
 
-    function openPanel(prop) {
-      const status = LOT_STATUS[prop.name] || 'not-available';
-      const cfg    = STATUS_CONFIG[status];
+    // Fetch listings once and cache
+    let listingsData = null;
+    fetch('data/listings.json')
+      .then(r => r.json())
+      .then(d => { listingsData = d; })
+      .catch(() => { listingsData = { forSale: [], forRent: [] }; });
 
-      document.getElementById('panel-lot-name').textContent  = 'Lot ' + prop.name;
-      document.getElementById('panel-type-badge').textContent = prop.type;
-      document.getElementById('panel-status-dot').style.background = cfg.color;
-      document.getElementById('panel-status-label').textContent     = cfg.label;
-      document.getElementById('panel-detail-type').textContent = prop.type === 'Shore' ? 'Shoreline Lot' : 'Inland Lot';
+    // "S6" → 106, "I7" → 207
+    function lotNameToId(name) {
+      const m = name.match(/^([SI])(\d+)$/);
+      if (!m) return null;
+      return (m[1] === 'S' ? 100 : 200) + parseInt(m[2], 10);
+    }
+
+    function openPanel(prop) {
+      const status  = LOT_STATUS[prop.name] || 'not_available';
+      const cfg     = STATUS_CONFIG[status];
+      const lotId   = lotNameToId(prop.name);
+      const listing = listingsData && listingsData.forSale
+        ? (listingsData.forSale.find(l => l.id === lotId) || null)
+        : null;
+
+      document.getElementById('panel-lot-name').textContent           = 'Lot ' + prop.name;
+      document.getElementById('panel-type-badge').textContent          = prop.type;
+      document.getElementById('panel-status-dot').style.background     = cfg.color;
+      document.getElementById('panel-status-label').textContent        = cfg.label;
+      document.getElementById('panel-detail-type').textContent         = prop.type === 'Shore' ? 'Shoreline Lot' : 'Inland Lot';
+
+      // Price row — only show if listing has a price
+      const priceRow = document.getElementById('panel-price-row');
+      const priceEl  = document.getElementById('panel-price');
+      if (listing && listing.price) {
+        priceEl.textContent = listing.price;
+        priceRow.hidden = false;
+      } else {
+        priceRow.hidden = true;
+      }
+
+      // Description
+      const descEl = document.getElementById('panel-description');
+      if (listing && listing.description) {
+        descEl.textContent = listing.description;
+        descEl.hidden = false;
+      } else {
+        descEl.hidden = true;
+      }
+
+      // Contextual note and CTA
+      const noteEl = document.getElementById('panel-note');
+      const ctaEl  = document.getElementById('panel-cta');
+      if (status === 'for_sale') {
+        noteEl.textContent = 'This lot is currently listed for sale. Contact us for dimensions, site details, and a private showing.';
+        ctaEl.textContent  = 'Inquire About This Lot';
+        ctaEl.href         = 'mailto:info@fincabuenavida.com?subject=Lot%20' + prop.name + '%20Inquiry';
+        ctaEl.hidden       = false;
+      } else {
+        noteEl.textContent = 'This lot is not currently listed. Contact us to learn about future availability.';
+        ctaEl.hidden       = true;
+      }
 
       panel.classList.add('panel-open');
     }

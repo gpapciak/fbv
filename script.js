@@ -84,184 +84,71 @@ function initLeaves() {
 }
 initLeaves();
 
-// ---- Load data and render map + listings ----
+// ---- Supabase init (public anon key — safe in browser) ----
+let sb = null;
+(function () {
+  const cfg = window.FBV_CONFIG || {};
+  if (cfg.supabaseUrl && cfg.supabaseAnonKey &&
+      !cfg.supabaseUrl.includes('your-project-id') &&
+      !cfg.supabaseAnonKey.includes('your-anon-key')) {
+    sb = supabase.createClient(cfg.supabaseUrl, cfg.supabaseAnonKey);
+  }
+})();
+
+// ---- Helpers ----
+function lotLabel(n) {
+  if (n >= 200) return 'I' + (n - 200);
+  if (n >= 100) return 'S' + (n - 100);
+  return String(n);
+}
+
+function escHtml(str) {
+  if (str == null) return '';
+  return String(str)
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+}
+
+// ---- Load data and render listings ----
 let lotsData = null;
 let listingsData = null;
+let supabaseListings = null;
 
 async function loadData() {
+  // Always load lots.json for static lot info (name, type, acreage)
   try {
-    const [lotsRes, listingsRes] = await Promise.all([
-      fetch('data/lots.json'),
-      fetch('data/listings.json')
-    ]);
-    lotsData = await lotsRes.json();
-    listingsData = await listingsRes.json();
-    renderMap();
-    renderListings();
+    lotsData = await fetch('data/lots.json').then(r => r.json());
   } catch (err) {
-    console.warn('Data load failed, using embedded fallback:', err);
+    console.warn('lots.json load failed:', err);
   }
-}
 
-// ---- Property Map (SVG) ----
-// Fill/stroke set as SVG presentation attributes (not CSS) for cross-browser reliability
-const LOT_STYLES = {
-  'owner-occupied': { fill: 'rgba(95,158,112,0.62)',  stroke: 'rgba(255,255,255,0.60)', sw: '1.2' },
-  'for-sale':       { fill: 'rgba(232,132,90,0.72)',  stroke: 'rgba(255,210,190,0.85)', sw: '1.8' },
-  'for-rent':       { fill: 'rgba(88,185,215,0.72)',  stroke: 'rgba(195,232,248,0.85)', sw: '1.8' },
-  'available':      { fill: 'rgba(130,205,205,0.55)', stroke: 'rgba(175,232,232,0.80)', sw: '1.5', dash: '5,3' },
-};
+  if (sb) {
+    try {
+      const { data, error } = await sb
+        .from('lot_listings')
+        .select('lot_number, status, description, price, existing_structures, external_sale_url')
+        .eq('status', 'for_sale')
+        .order('lot_number');
+      if (error) throw error;
+      supabaseListings = data || [];
+    } catch (err) {
+      console.warn('Supabase fetch failed, falling back to JSON:', err.message || err);
+      supabaseListings = null;
+    }
+  }
 
-function renderMap() {
-  if (!lotsData) return;
-  const svg = document.getElementById('property-map');
-  if (!svg) return;
+  // Always load listings.json (needed for rentals; also for-sale fallback)
+  try {
+    listingsData = await fetch('data/listings.json').then(r => r.json());
+  } catch (err) {
+    console.warn('listings.json load failed:', err);
+  }
 
-  const tooltip = document.getElementById('map-tooltip');
-  const mapWrapper = document.querySelector('.map-wrapper');
-  const lotsLayer  = svg.querySelector('#lots-layer');
-  const labelsLayer = svg.querySelector('#labels-layer');
-  if (!lotsLayer || !labelsLayer) { console.warn('SVG layers missing'); return; }
-
-  lotsData.lots.forEach(lot => {
-    const points = pathToPoints(lot.svgPath);
-    if (!points) return;
-
-    // ---- Polygon ----
-    const polygon = document.createElementNS('http://www.w3.org/2000/svg', 'polygon');
-    polygon.setAttribute('points', points);
-
-    const s = LOT_STYLES[lot.status] || LOT_STYLES['owner-occupied'];
-    polygon.setAttribute('fill',         s.fill);
-    polygon.setAttribute('stroke',       s.stroke);
-    polygon.setAttribute('stroke-width', s.sw);
-    if (s.dash) polygon.setAttribute('stroke-dasharray', s.dash);
-
-    polygon.classList.add('lot', lot.status);
-    polygon.setAttribute('data-lot',   lot.id);
-    polygon.setAttribute('role',       'button');
-    polygon.setAttribute('tabindex',   '0');
-    polygon.setAttribute('aria-label', `Lot ${lot.id} — ${lot.status.replace(/-/g, ' ')}`);
-    polygon.style.cursor = 'pointer';
-    polygon.style.transition = 'filter 0.2s ease';
-    lotsLayer.appendChild(polygon);
-
-    // ---- Lot number label ----
-    const centroid = getCentroid(points);
-    // Background circle for readability
-    const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
-    circle.setAttribute('cx', centroid.x);
-    circle.setAttribute('cy', centroid.y);
-    circle.setAttribute('r',  '8');
-    circle.setAttribute('fill', 'rgba(0,0,0,0.28)');
-    circle.setAttribute('pointer-events', 'none');
-    labelsLayer.appendChild(circle);
-
-    const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-    text.setAttribute('x',                centroid.x);
-    text.setAttribute('y',                centroid.y);
-    text.setAttribute('fill',             'white');
-    text.setAttribute('font-family',      "'DM Sans', sans-serif");
-    text.setAttribute('font-size',        '9.5');
-    text.setAttribute('font-weight',      '700');
-    text.setAttribute('text-anchor',      'middle');
-    text.setAttribute('dominant-baseline','middle');
-    text.setAttribute('pointer-events',   'none');
-    text.setAttribute('paint-order',      'stroke');
-    text.setAttribute('stroke',           'rgba(0,0,0,0.5)');
-    text.setAttribute('stroke-width',     '2');
-    text.setAttribute('stroke-linejoin',  'round');
-    text.textContent = lot.id;
-    labelsLayer.appendChild(text);
-
-    // Tooltip interaction
-    const showTooltip = (e) => {
-      const rect = mapWrapper.getBoundingClientRect();
-      const svgRect = svg.getBoundingClientRect();
-      const x = e.clientX - rect.left + 12;
-      const y = e.clientY - rect.top - 10;
-
-      const statusLabels = {
-        'owner-occupied': 'Owner Occupied',
-        'for-sale': 'For Sale',
-        'for-rent': 'For Rent',
-        'available': 'Available'
-      };
-
-      const typeLabel = lot.type.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
-      const clickHint = (lot.status === 'for-sale' || lot.status === 'available' || lot.status === 'for-rent')
-        ? `<div style="font-family:var(--font-sans);font-size:0.68rem;color:rgba(157,216,216,0.6);margin-top:0.5rem">Click to view →</div>`
-        : '';
-      tooltip.innerHTML = `
-        <span class="tooltip-lot">Lot ${lot.id}</span>
-        <div class="tooltip-title">${typeLabel}</div>
-        <div class="tooltip-meta">
-          <span>${lot.acres} acres</span>
-          <span class="tooltip-status ${lot.status}">${statusLabels[lot.status]}</span>
-        </div>
-        ${lot.price ? `<div style="font-family:var(--font-display);color:var(--teal-pale);font-size:1.05rem;margin-top:0.4rem;font-weight:600">${lot.price}</div>` : ''}
-        ${clickHint}
-      `;
-
-      // Clamp to container
-      const ttW = 220, ttH = 100;
-      const maxX = rect.width - ttW - 10;
-      const maxY = rect.height - ttH - 10;
-      tooltip.style.left = Math.min(x, maxX) + 'px';
-      tooltip.style.top  = Math.max(10, Math.min(y, maxY)) + 'px';
-      tooltip.classList.add('visible');
-    };
-
-    polygon.addEventListener('mousemove',  showTooltip);
-    polygon.addEventListener('mouseenter', (e) => {
-      polygon.style.filter = 'brightness(1.25) drop-shadow(0 0 6px rgba(255,255,255,0.4))';
-      showTooltip(e);
-    });
-    polygon.addEventListener('mouseleave', () => {
-      polygon.style.filter = '';
-      tooltip.classList.remove('visible');
-    });
-
-    polygon.addEventListener('click', () => {
-      if (lot.status === 'for-sale' || lot.status === 'available') {
-        document.getElementById('properties')?.scrollIntoView({ behavior: 'smooth' });
-        document.querySelector('.tab-btn[data-tab="for-sale"]')?.click();
-        setTimeout(() => {
-          const card = document.getElementById(`lot-${lot.id}`);
-          if (card) card.scrollIntoView({ behavior: 'smooth', block: 'center' });
-          else openContactModal(null, `Lot ${lot.id} — ${lot.type}`);
-        }, 600);
-      } else if (lot.status === 'for-rent') {
-        document.getElementById('properties')?.scrollIntoView({ behavior: 'smooth' });
-        document.querySelector('.tab-btn[data-tab="for-rent"]')?.click();
-      }
-    });
-
-    polygon.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter' || e.key === ' ') polygon.click();
-    });
-  });
-}
-
-function pathToPoints(pathStr) {
-  // Convert simple "M x y L x y L x y Z" paths to polygon points
-  const matches = pathStr.match(/[-\d.]+\s+[-\d.]+/g) || [];
-  return matches.map(pair => pair.trim().replace(/\s+/, ',')).join(' ');
-}
-
-function getCentroid(pointsStr) {
-  const pairs = pointsStr.trim().split(/\s+/);
-  let sumX = 0, sumY = 0;
-  pairs.forEach(pair => {
-    const [x, y] = pair.split(',').map(Number);
-    sumX += x; sumY += y;
-  });
-  return { x: sumX / pairs.length, y: sumY / pairs.length };
+  renderListings();
 }
 
 // ---- Listings ----
 function renderListings() {
-  if (!listingsData) return;
   renderForSale();
   renderForRent();
 }
@@ -304,40 +191,87 @@ function getListingImageSVG(type, status) {
 
 function renderForSale() {
   const grid = document.getElementById('for-sale-grid');
-  if (!grid || !listingsData.forSale) return;
+  if (!grid) return;
 
-  grid.innerHTML = listingsData.forSale.map(listing => `
-    <div class="listing-card fade-in" id="lot-${listing.lotNumber}">
-      <div class="listing-image">
-        <div class="listing-image-placeholder">
-          ${getListingImageSVG(listing.type, listing.status)}
-        </div>
-        <span class="listing-badge for-sale">For Sale</span>
-        <span class="listing-type-badge">${listing.type.replace('-', ' ')}</span>
-      </div>
-      <div class="listing-body">
-        <div class="listing-lot">Lot ${listing.lotNumber}</div>
-        <h3 class="listing-title">${listing.title}</h3>
-        <div class="listing-meta">
-          <span>
-            <svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor"><path d="M8 1C4.7 1 2 3.7 2 7c0 4.5 6 8 6 8s6-3.5 6-8c0-3.3-2.7-6-6-6zm0 8a2 2 0 1 1 0-4 2 2 0 0 1 0 4z"/></svg>
-            ${listing.acres} acres
-          </span>
-          <span>${listing.type.replace('-', ' ')}</span>
-        </div>
-        <p class="listing-description">${listing.description}</p>
-        <div class="listing-features">
-          ${listing.features.map(f => `<span class="feature-tag">${f}</span>`).join('')}
-        </div>
-        <div class="listing-footer">
-          <span class="listing-price">${listing.price}</span>
-          <button class="listing-contact" onclick="openContactModal('${listing.id}', '${listing.title.replace(/'/g, "\\'")}')">Inquire</button>
-        </div>
-      </div>
-    </div>
-  `).join('');
+  // Use live Supabase rows when available; fall back to static JSON
+  let items;
+  if (supabaseListings !== null) {
+    items = supabaseListings;
+  } else if (listingsData && listingsData.forSale) {
+    items = listingsData.forSale.map(l => ({
+      lot_number: l.lotNumber,
+      status: 'for_sale',
+      price: l.price,
+      description: l.description,
+      existing_structures: null,
+      external_sale_url: null,
+    }));
+  } else {
+    items = [];
+  }
 
-  // Re-observe new elements
+  if (items.length === 0) {
+    grid.innerHTML = '<div style="grid-column:1/-1;padding:2rem;text-align:center;color:var(--text-light);font-style:italic">No lots are currently listed for sale. Check back soon.</div>';
+    return;
+  }
+
+  grid.innerHTML = items.map(row => {
+    const lotName  = lotLabel(row.lot_number);
+    const lotInfo  = lotsData && lotsData.lots
+      ? (lotsData.lots.find(l => l.id === row.lot_number) || null)
+      : null;
+    const lotType  = lotInfo ? lotInfo.type : (row.lot_number < 200 ? 'shore' : 'inland');
+    const acreage  = lotInfo && lotInfo.acreage ? lotInfo.acreage : null;
+    const typeLabel = lotType === 'shore' ? 'Shore Lot' : 'Inland Lot';
+    const imgType   = lotType === 'shore' ? 'oceanfront' : 'jungle';
+
+    const acreageLine = acreage
+      ? `<span><svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor"><path d="M8 1C4.7 1 2 3.7 2 7c0 4.5 6 8 6 8s6-3.5 6-8c0-3.3-2.7-6-6-6zm0 8a2 2 0 1 1 0-4 2 2 0 0 1 0 4z"/></svg> ${escHtml(acreage)} acres</span>`
+      : '';
+
+    const descLine = row.description
+      ? `<p class="listing-description">${escHtml(row.description)}</p>`
+      : '';
+
+    const structuresLine = row.existing_structures
+      ? `<p class="listing-description" style="margin-top:0.4rem"><strong>Structures:</strong> ${escHtml(row.existing_structures)}</p>`
+      : '';
+
+    const priceLine = row.price
+      ? `<span class="listing-price">${escHtml(row.price)}</span>`
+      : `<span class="listing-price" style="opacity:0.55;font-style:italic">Price on request</span>`;
+
+    const ctaBtn = row.external_sale_url
+      ? `<a href="${escHtml(row.external_sale_url)}" class="listing-contact" target="_blank" rel="noopener">View Listing</a>`
+      : `<button class="listing-contact" onclick="openContactModal(null, 'Lot ${escHtml(lotName)}')">Inquire</button>`;
+
+    return `
+      <div class="listing-card fade-in" id="lot-${escHtml(lotName)}">
+        <div class="listing-image">
+          <div class="listing-image-placeholder">
+            ${getListingImageSVG(imgType, 'for_sale')}
+          </div>
+          <span class="listing-badge for-sale">For Sale</span>
+          <span class="listing-type-badge">${typeLabel}</span>
+        </div>
+        <div class="listing-body">
+          <div class="listing-lot">Lot ${escHtml(lotName)}</div>
+          <h3 class="listing-title">${typeLabel} ${escHtml(lotName)}</h3>
+          <div class="listing-meta">
+            ${acreageLine}
+            <span>${typeLabel}</span>
+          </div>
+          ${descLine}
+          ${structuresLine}
+          <div class="listing-footer">
+            ${priceLine}
+            ${ctaBtn}
+          </div>
+        </div>
+      </div>
+    `;
+  }).join('');
+
   grid.querySelectorAll('.fade-in').forEach(el => fadeObserver.observe(el));
 }
 
@@ -367,9 +301,10 @@ function renderForRent() {
           <p class="external-note">Independent business — not part of the FBV owners association. Contact them directly for bookings and availability.</p>
         ` : ''}
         <div class="listing-footer" style="justify-content:flex-end">
-          <a href="${listing.bookingLink}" class="listing-contact" ${listing.externalOnly ? 'target="_blank" rel="noopener"' : 'onclick="return handleRentContact(event, \'' + listing.id + '\')"'}>
-            ${listing.externalOnly ? 'Visit Site' : 'Request Info'}
-          </a>
+          ${listing.bookingLink
+            ? `<a href="${listing.bookingLink}" class="listing-contact" target="_blank" rel="noopener">Visit Site</a>`
+            : `<button class="listing-contact" onclick="openContactModal('${listing.id}', '${listing.title.replace(/'/g, "\\'")}')">Request Info</button>`
+          }
         </div>
       </div>
     </div>

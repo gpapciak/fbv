@@ -132,17 +132,19 @@ CREATE INDEX IF NOT EXISTS comments_announcement_id_idx ON comments(announcement
 -- TABLE: lot_listings
 -- Public-facing listing info for each lot
 -- ============================================================
+-- lot_number encoding: Shore lots S1–S12 = 101–112, Inland lots I1–I12 = 201–212 (I8=208 included)
 CREATE TABLE IF NOT EXISTS lot_listings (
-  id           UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-  lot_number   INTEGER NOT NULL UNIQUE,
-  status       TEXT NOT NULL DEFAULT 'owner-occupied'
-               CHECK (status IN ('owner-occupied','for-sale','for-rent','available')),
-  description  TEXT,
-  price        TEXT,
-  rental_link  TEXT,
-  photos       JSONB NOT NULL DEFAULT '[]',
-  updated_by   UUID REFERENCES owners(id) ON DELETE SET NULL,
-  updated_at   TIMESTAMPTZ NOT NULL DEFAULT NOW()
+  id                  UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  lot_number          INTEGER NOT NULL UNIQUE,
+  status              TEXT NOT NULL DEFAULT 'not_available'
+                      CHECK (status IN ('for_sale','not_available')),
+  description         TEXT,
+  price               TEXT,
+  existing_structures TEXT,
+  external_sale_url   TEXT,
+  photos              JSONB NOT NULL DEFAULT '[]',
+  updated_by          UUID REFERENCES owners(id) ON DELETE SET NULL,
+  updated_at          TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
 CREATE INDEX IF NOT EXISTS lot_listings_lot_number_idx ON lot_listings(lot_number);
@@ -322,7 +324,7 @@ CREATE POLICY "lot_listings_upsert_own"
   WITH CHECK (
     updated_by = current_owner_id() AND
     lot_number = ANY(
-      (SELECT lot_numbers FROM owners WHERE id = current_owner_id())
+      (SELECT lot_numbers FROM owners WHERE id = current_owner_id())::integer[]
     )
   );
 
@@ -331,13 +333,13 @@ CREATE POLICY "lot_listings_update_own"
   TO authenticated
   USING (
     lot_number = ANY(
-      (SELECT lot_numbers FROM owners WHERE id = current_owner_id())
+      (SELECT lot_numbers FROM owners WHERE id = current_owner_id())::integer[]
     )
   )
   WITH CHECK (
     updated_by = current_owner_id() AND
     lot_number = ANY(
-      (SELECT lot_numbers FROM owners WHERE id = current_owner_id())
+      (SELECT lot_numbers FROM owners WHERE id = current_owner_id())::integer[]
     )
   );
 
@@ -357,18 +359,15 @@ CREATE POLICY "lot_listings_update_admin"
 -- Uncomment and adjust after your owners are set up.
 -- ============================================================
 
-/*
--- Insert initial lot listings (replace lot numbers with your actual lots)
+-- Seed all 24 lots. S1–S12 = 101–112, I1–I12 = 201–212 (I8=208).
+-- Only S6 (106) is currently for-sale; all others not-available.
 INSERT INTO lot_listings (lot_number, status) VALUES
-  (1,  'owner-occupied'),
-  (2,  'owner-occupied'),
-  (3,  'for-sale'),
-  (4,  'available'),
-  (5,  'owner-occupied'),
-  (6,  'for-rent'),
-  (7,  'owner-occupied'),
-  (8,  'available'),
-  (9,  'owner-occupied'),
-  (10, 'for-sale')
+  (101, 'not_available'), (102, 'not_available'), (103, 'not_available'),
+  (104, 'not_available'), (105, 'not_available'), (106, 'for_sale'),
+  (107, 'not_available'), (108, 'not_available'), (109, 'not_available'),
+  (110, 'not_available'), (111, 'not_available'), (112, 'not_available'),
+  (201, 'not_available'), (202, 'not_available'), (203, 'not_available'),
+  (204, 'not_available'), (205, 'not_available'), (206, 'not_available'),
+  (207, 'not_available'), (208, 'not_available'), (209, 'not_available'),
+  (210, 'not_available'), (211, 'not_available')
 ON CONFLICT (lot_number) DO NOTHING;
-*/

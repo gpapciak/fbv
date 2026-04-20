@@ -44,7 +44,7 @@ const DEMO_OWNER = {
   name: 'Demo Member',
   email: 'demo@fincabuenavidapanama.com',
   phone: '+1 555-0100',
-  lot_numbers: [3, 7],
+  lot_numbers: [103, 207],
   bio: 'Placeholder profile — connect Supabase to see real member data.',
   photo_url: null,
   directory_opt_in: true,
@@ -59,9 +59,9 @@ const DEMO_DUES = [
 ];
 
 const DEMO_DIRECTORY = [
-  { id: 'demo-owner-1', name: 'Demo Member', email: 'demo@example.com', lot_numbers: [3, 7], bio: 'Placeholder profile.', photo_url: null },
-  { id: 'demo-owner-2', name: 'Maria Santos', email: 'maria@example.com', lot_numbers: [5], bio: 'Loves the jungle mornings and watching dolphins from the dock.', photo_url: null },
-  { id: 'demo-owner-3', name: 'Carlos Rivera', email: 'carlos@example.com', lot_numbers: [2], bio: 'Builder and dreamer. Working on my forever home here.', photo_url: null },
+  { id: 'demo-owner-1', name: 'Demo Member', email: 'demo@example.com', lot_numbers: [103, 207], bio: 'Placeholder profile.', photo_url: null },
+  { id: 'demo-owner-2', name: 'Maria Santos', email: 'maria@example.com', lot_numbers: [105], bio: 'Loves the jungle mornings and watching dolphins from the dock.', photo_url: null },
+  { id: 'demo-owner-3', name: 'Carlos Rivera', email: 'carlos@example.com', lot_numbers: [202], bio: 'Builder and dreamer. Working on my forever home here.', photo_url: null },
 ];
 
 const DEMO_DOCUMENTS = [
@@ -97,9 +97,16 @@ const DEMO_ANNOUNCEMENTS = [
 ];
 
 const DEMO_LISTINGS = [
-  { id: 'l1', lot_number: 3, status: 'owner-occupied', description: 'My primary jungle retreat.', price: '', rental_link: '', photos: [] },
-  { id: 'l2', lot_number: 7, status: 'for-rent', description: 'Elevated platform with ocean views. Available June–August.', price: '$150/night', rental_link: 'https://airbnb.com', photos: [] },
+  { id: 'l1', lot_number: 103, status: 'not_available', description: 'My primary jungle retreat.', price: '', existing_structures: '', external_sale_url: '', photos: [] },
+  { id: 'l2', lot_number: 207, status: 'for_sale',      description: 'Elevated platform with ocean views.', price: '$150,000', existing_structures: '', external_sale_url: '', photos: [] },
 ];
+
+// Cached lots.json for acreage lookup in the listing form
+let lotsData = null;
+fetch('../data/lots.json')
+  .then(function (r) { return r.json(); })
+  .then(function (d) { lotsData = d; })
+  .catch(function () { lotsData = { lots: [] }; });
 
 // =====================================================
 // AUTH
@@ -163,7 +170,7 @@ function setSidebarMember(owner) {
   if (lotsEl) {
     const lots = (owner.lot_numbers || []);
     lotsEl.textContent = lots.length > 0
-      ? 'Lot' + (lots.length > 1 ? 's' : '') + ' ' + lots.join(', ')
+      ? 'Lot' + (lots.length > 1 ? 's' : '') + ' ' + lots.map(lotLabel).join(', ')
       : 'No lots assigned';
   }
   if (avatarEl) {
@@ -301,7 +308,7 @@ async function loadDashboard() {
     + '<div class="stat-cards">'
     + '<div class="stat-card accent-teal">'
     + '<span class="stat-label">Your Lot(s)</span>'
-    + '<div class="stat-value">' + (lots.length > 0 ? lots.join(', ') : '—') + '</div>'
+    + '<div class="stat-value">' + (lots.length > 0 ? lots.map(lotLabel).join(', ') : '—') + '</div>'
     + '<div class="stat-sub">Property Owner</div>'
     + '</div>'
 
@@ -673,7 +680,7 @@ async function loadDirectory() {
       + '<div class="dir-name">' + escHtml(m.name) + '</div>'
       + '<div class="dir-lot">'
       + ((m.lot_numbers || []).length > 0
-          ? 'Lot' + (m.lot_numbers.length > 1 ? 's' : '') + ' ' + m.lot_numbers.join(', ')
+          ? 'Lot' + (m.lot_numbers.length > 1 ? 's' : '') + ' ' + m.lot_numbers.map(lotLabel).join(', ')
           : 'Property Owner')
       + '</div>'
       + (m.bio ? '<div class="dir-bio">' + escHtml(m.bio) + '</div>' : '')
@@ -1279,24 +1286,32 @@ async function loadMyListing() {
 
   const sectionsHtml = lots.map(function (lotNum) {
     const listing = existingListings[lotNum] || {};
+    const lotInfo = lotsData && lotsData.lots
+      ? (lotsData.lots.find(function (l) { return l.id === lotNum; }) || null)
+      : null;
+    const acreage = lotInfo && lotInfo.acreage ? lotInfo.acreage : '—';
     return '<div class="listing-section">'
-      + '<div class="listing-lot-title">Lot ' + lotNum + '</div>'
+      + '<div class="listing-lot-title">Lot ' + lotLabel(lotNum) + '</div>'
       + '<form id="listing-form-' + lotNum + '" onsubmit="saveListing(event,' + lotNum + ')" novalidate>'
       + '<div class="listing-form-grid">'
       + '<div class="form-field"><label for="listing-status-' + lotNum + '">Status</label>'
       + '<select id="listing-status-' + lotNum + '">'
-      + ['owner-occupied', 'for-sale', 'for-rent', 'available'].map(function (s) {
+      + ['for_sale', 'not_available'].map(function (s) {
           return '<option value="' + s + '"' + (listing.status === s ? ' selected' : '') + '>'
-            + { 'owner-occupied': 'Owner Occupied', 'for-sale': 'For Sale', 'for-rent': 'For Rent', 'available': 'Available' }[s]
+            + { 'for_sale': 'For Sale', 'not_available': 'Not Available' }[s]
             + '</option>';
         }).join('')
       + '</select></div>'
-      + '<div class="form-field"><label for="listing-price-' + lotNum + '">Price / Rate</label>'
-      + '<input type="text" id="listing-price-' + lotNum + '" value="' + escHtml(listing.price || '') + '" placeholder="e.g. $250,000 or $150/night" /></div>'
+      + '<div class="form-field"><label>Acreage</label>'
+      + '<input type="text" value="' + escHtml(acreage) + '" readonly style="opacity:0.6;cursor:default;" /></div>'
+      + '<div class="form-field"><label for="listing-price-' + lotNum + '">Asking Price</label>'
+      + '<input type="text" id="listing-price-' + lotNum + '" value="' + escHtml(listing.price || '') + '" placeholder="e.g. $250,000" /></div>'
       + '<div class="form-field listing-form-full"><label for="listing-desc-' + lotNum + '">Description</label>'
       + '<textarea id="listing-desc-' + lotNum + '" rows="3">' + escHtml(listing.description || '') + '</textarea></div>'
-      + '<div class="form-field listing-form-full"><label for="listing-link-' + lotNum + '">Rental / Listing Link</label>'
-      + '<input type="text" id="listing-link-' + lotNum + '" value="' + escHtml(listing.rental_link || '') + '" placeholder="https://airbnb.com/…" /></div>'
+      + '<div class="form-field listing-form-full"><label for="listing-structures-' + lotNum + '">Existing Structures</label>'
+      + '<textarea id="listing-structures-' + lotNum + '" rows="2" placeholder="e.g. Cleared foundation, water hookup installed">' + escHtml(listing.existing_structures || '') + '</textarea></div>'
+      + '<div class="form-field listing-form-full"><label for="listing-url-' + lotNum + '">External Sale URL</label>'
+      + '<input type="text" id="listing-url-' + lotNum + '" value="' + escHtml(listing.external_sale_url || '') + '" placeholder="https://…" /></div>'
       + '</div>'
       + '<button type="submit" class="btn-primary btn-sm" id="listing-save-' + lotNum + '">Save Listing</button>'
       + '</form>'
@@ -1311,10 +1326,11 @@ async function loadMyListing() {
 
 async function saveListing(e, lotNum) {
   e.preventDefault();
-  const status = document.getElementById('listing-status-' + lotNum).value;
-  const price = document.getElementById('listing-price-' + lotNum).value.trim();
-  const description = document.getElementById('listing-desc-' + lotNum).value.trim();
-  const rental_link = document.getElementById('listing-link-' + lotNum).value.trim();
+  const status              = document.getElementById('listing-status-'     + lotNum).value;
+  const price               = document.getElementById('listing-price-'      + lotNum).value.trim();
+  const description         = document.getElementById('listing-desc-'       + lotNum).value.trim();
+  const existing_structures = document.getElementById('listing-structures-' + lotNum).value.trim();
+  const external_sale_url   = document.getElementById('listing-url-'        + lotNum).value.trim();
   const btn = document.getElementById('listing-save-' + lotNum);
 
   btn.disabled = true;
@@ -1333,7 +1349,8 @@ async function saveListing(e, lotNum) {
     status,
     price,
     description,
-    rental_link,
+    existing_structures,
+    external_sale_url,
     updated_by: currentOwner.id,
     updated_at: new Date().toISOString(),
   }, { onConflict: 'lot_number' });
@@ -1345,7 +1362,10 @@ async function saveListing(e, lotNum) {
     return;
   }
 
-  showToast('Lot ' + lotNum + ' listing updated.', 'success');
+  const toastMsg = status === 'for_sale'
+    ? 'Lot ' + lotLabel(lotNum) + ' listed for sale — the board will be notified.'
+    : 'Lot ' + lotLabel(lotNum) + ' listing updated.';
+  showToast(toastMsg, 'success');
   btn.disabled = false;
   btn.textContent = 'Saved!';
   setTimeout(function () { btn.textContent = 'Save Listing'; }, 1500);
@@ -1439,6 +1459,12 @@ document.getElementById('payment-form').onsubmit = submitPayment;
 // =====================================================
 // UTILITIES
 // =====================================================
+
+function lotLabel(n) {
+  if (n >= 200) return 'I' + (n - 200);
+  if (n >= 100) return 'S' + (n - 100);
+  return String(n);
+}
 
 function formatCurrency(cents) {
   return '$' + (cents / 100).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
