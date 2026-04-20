@@ -17,10 +17,10 @@
 
 window.FBV_CONFIG = {
   // Supabase project URL — e.g. "https://abcdefghijkl.supabase.co"
-  supabaseUrl: 'https://your-project-id.supabase.co',
+  supabaseUrl: 'https://sybljqqbnpnvbjnrsqro.supabase.co',
 
   // Supabase anon key — long JWT string starting with "eyJ..."
-  supabaseAnonKey: 'your-anon-key-here',
+  supabaseAnonKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN5YmxqcXFibnBudmJqbnJzcXJvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY2NDUzNjIsImV4cCI6MjA5MjIyMTM2Mn0.lvz0LTIFU54c_8uFXRh5Qm_nVpXDshLo2JXZSb_1PsY',
 
   // Stripe publishable key — starts with "pk_live_" or "pk_test_"
   stripePublishableKey: 'pk_test_your-publishable-key-here',
