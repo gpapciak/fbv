@@ -279,38 +279,58 @@ function renderForRent() {
   const grid = document.getElementById('for-rent-grid');
   if (!grid || !listingsData.forRent) return;
 
-  grid.innerHTML = listingsData.forRent.map(listing => `
+  let hasAirbnb = false;
+
+  grid.innerHTML = listingsData.forRent.map(listing => {
+    const imageBlock = listing.airbnbId
+      ? `<div class="listing-image listing-image--airbnb">
+           <div class="airbnb-embed-frame" data-id="${escHtml(listing.airbnbId)}" data-view="home" data-hide-price="true" style="width:100%;height:300px;"></div>
+           <span class="listing-badge for-rent">For Rent</span>
+         </div>`
+      : `<div class="listing-image">
+           <div class="listing-image-placeholder">
+             ${getListingImageSVG(listing.type, 'for-rent')}
+           </div>
+           <span class="listing-badge for-rent">${listing.externalOnly ? 'External' : 'For Rent'}</span>
+           ${listing.type !== 'resort' ? `<span class="listing-type-badge">${listing.type.replace('-', ' ')}</span>` : ''}
+         </div>`;
+
+    if (listing.airbnbId) hasAirbnb = true;
+
+    return `
     <div class="listing-card ${listing.externalOnly ? 'external-only' : ''} fade-in">
-      <div class="listing-image">
-        <div class="listing-image-placeholder">
-          ${getListingImageSVG(listing.type, 'for-rent')}
-        </div>
-        <span class="listing-badge for-rent">${listing.externalOnly ? 'External' : 'For Rent'}</span>
-        ${listing.type !== 'resort' ? `<span class="listing-type-badge">${listing.type.replace('-', ' ')}</span>` : ''}
-      </div>
+      ${imageBlock}
       <div class="listing-body">
         ${listing.lotNumber ? `<div class="listing-lot">Lot ${listing.lotNumber}</div>` : ''}
-        <h3 class="listing-title">${listing.title}</h3>
-        <p class="listing-description">${listing.shortDescription}</p>
+        <h3 class="listing-title">${escHtml(listing.title)}</h3>
+        <p class="listing-description">${escHtml(listing.shortDescription)}</p>
         ${listing.amenities.length ? `
           <div class="listing-features">
-            ${listing.amenities.map(a => `<span class="feature-tag">${a}</span>`).join('')}
+            ${listing.amenities.map(a => `<span class="feature-tag">${escHtml(a)}</span>`).join('')}
           </div>
         ` : ''}
-        ${listing.externalOnly ? `
+        ${listing.externalOnly && !listing.airbnbId ? `
           <p class="external-note">Independent business — not part of the FBV owners association. Contact them directly for bookings and availability.</p>
         ` : ''}
         <div class="listing-footer" style="justify-content:flex-end">
           ${listing.bookingLink
-            ? `<a href="${listing.bookingLink}" class="listing-contact" target="_blank" rel="noopener">Visit Site</a>`
-            : `<button class="listing-contact" onclick="openContactModal('${listing.id}', '${listing.title.replace(/'/g, "\\'")}')">Request Info</button>`
+            ? `<a href="${escHtml(listing.bookingLink)}" class="listing-contact" target="_blank" rel="noopener">${listing.airbnbId ? 'Book on Airbnb' : 'Visit Site'}</a>`
+            : `<button class="listing-contact" onclick="openContactModal('${escHtml(listing.id)}', '${listing.title.replace(/'/g, "\\'")}')">Request Info</button>`
           }
         </div>
       </div>
     </div>
-  `).join('');
+  `;
+  }).join('');
 
   grid.querySelectorAll('.fade-in').forEach(el => fadeObserver.observe(el));
+
+  if (hasAirbnb && !document.querySelector('script[src*="airbnb_jssdk"]')) {
+    const s = document.createElement('script');
+    s.src = 'https://www.airbnb.com/embeddable/airbnb_jssdk';
+    s.async = true;
+    document.body.appendChild(s);
+  }
 }
 
 function handleRentContact(e, id) {

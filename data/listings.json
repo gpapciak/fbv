@@ -74,7 +74,8 @@
       "shortDescription": "A private rental property within the FBV community.",
       "fullDescription": null,
       "amenities": [],
-      "bookingLink": null,
+      "bookingLink": "https://www.airbnb.com/rooms/2010364",
+      "airbnbId": "2010364",
       "ownerContact": null,
       "images": [],
       "externalOnly": true
