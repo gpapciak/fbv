@@ -1,0 +1,736 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FBV Property Map</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600&family=DM+Sans:wght@400;500&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --fbv-green:      #1A3C34;
+      --fbv-teal:       #2A8C7E;
+      --fbv-teal-light: #2ECC8F;
+      --fbv-cream:      #F2EDE4;
+      --fbv-gold:       #C9A84C;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html, body {
+      width: 100%; height: 100%;
+      overflow: hidden;
+      background: #0d1f1a;
+    }
+
+    #map {
+      width: 100%;
+      height: 100vh;
+    }
+
+    /* ── Leaflet tooltip ── */
+    .leaflet-tooltip {
+      background: rgba(26, 60, 52, 0.92);
+      border: 1px solid rgba(46, 204, 143, 0.4);
+      color: var(--fbv-cream);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 12px;
+      border-radius: 6px;
+      padding: 4px 10px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+      white-space: nowrap;
+    }
+    .leaflet-tooltip-top::before {
+      border-top-color: rgba(46, 204, 143, 0.4);
+    }
+
+    /* ── Branded header panel ── */
+    #fbv-brand-panel {
+      position: absolute;
+      top: 16px; left: 16px;
+      z-index: 1000;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: rgba(26, 60, 52, 0.88);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      border-radius: 12px;
+      padding: 12px 16px;
+      pointer-events: none;
+    }
+    #fbv-badge {
+      width: 40px; height: 40px;
+      border-radius: 50%;
+      background: var(--fbv-teal);
+      display: flex; align-items: center; justify-content: center;
+      font-family: 'Cormorant Garamond', serif;
+      font-weight: 700;
+      font-size: 14px;
+      color: #fff;
+      flex-shrink: 0;
+    }
+    #fbv-wordmark {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+    .fbv-name {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--fbv-cream);
+      letter-spacing: 0.04em;
+      line-height: 1.2;
+    }
+    .fbv-sub {
+      font-family: 'DM Sans', sans-serif;
+      font-size: 10px;
+      color: rgba(242, 237, 228, 0.6);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+
+    /* ── Legend panel ── */
+    #fbv-legend {
+      position: absolute;
+      bottom: 32px; left: 16px;
+      z-index: 1000;
+      background: rgba(26, 60, 52, 0.88);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      border-radius: 12px;
+      padding: 14px 16px;
+      min-width: 160px;
+    }
+    .legend-title {
+      font-family: 'DM Sans', sans-serif;
+      font-size: 10px;
+      font-weight: 500;
+      color: rgba(242, 237, 228, 0.6);
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      margin-bottom: 8px;
+    }
+    .legend-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 5px;
+    }
+    .legend-dot {
+      width: 10px; height: 10px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+    .legend-row-label {
+      font-family: 'DM Sans', sans-serif;
+      font-size: 12px;
+      color: var(--fbv-cream);
+    }
+    .legend-section-title {
+      font-family: 'DM Sans', sans-serif;
+      font-size: 10px;
+      font-weight: 500;
+      color: rgba(242, 237, 228, 0.6);
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      margin-top: 10px;
+      margin-bottom: 6px;
+    }
+    .legend-type-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 5px;
+    }
+    .legend-type-row svg {
+      flex-shrink: 0;
+    }
+
+    /* ── Legend mobile toggle ── */
+    #legend-toggle {
+      display: none;
+      position: absolute;
+      bottom: 32px; left: 16px;
+      z-index: 1001;
+      background: rgba(26, 60, 52, 0.88);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      border: 1px solid rgba(46, 204, 143, 0.3);
+      color: var(--fbv-cream);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 12px;
+      padding: 7px 12px;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+
+    /* ── Detail panel ── */
+    #lot-detail-panel {
+      position: fixed;
+      top: 0; right: 0;
+      width: 300px;
+      height: 100%;
+      background: rgba(18, 42, 36, 0.96);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      z-index: 2000;
+      padding: 32px 24px;
+      transform: translateX(100%);
+      transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      border-left: 1px solid rgba(42, 140, 126, 0.3);
+      overflow-y: auto;
+    }
+    #lot-detail-panel.panel-open {
+      transform: translateX(0);
+    }
+    #panel-close {
+      position: absolute;
+      top: 16px; right: 16px;
+      background: none;
+      border: none;
+      color: rgba(242, 237, 228, 0.5);
+      font-size: 18px;
+      cursor: pointer;
+      padding: 4px 8px;
+      line-height: 1;
+      transition: color 0.2s;
+    }
+    #panel-close:hover { color: var(--fbv-cream); }
+    .panel-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+      padding-top: 4px;
+    }
+    .panel-lot-name {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 28px;
+      color: var(--fbv-cream);
+      font-weight: 600;
+    }
+    .panel-type-badge {
+      font-family: 'DM Sans', sans-serif;
+      font-size: 11px;
+      background: rgba(42, 140, 126, 0.3);
+      color: var(--fbv-teal-light);
+      padding: 3px 10px;
+      border-radius: 20px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      border: 1px solid rgba(46, 204, 143, 0.4);
+    }
+    .panel-status {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .panel-status-dot {
+      width: 10px; height: 10px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+    .panel-status-label {
+      font-family: 'DM Sans', sans-serif;
+      font-size: 13px;
+      color: var(--fbv-cream);
+      font-weight: 500;
+    }
+    .panel-divider {
+      height: 1px;
+      background: rgba(42, 140, 126, 0.25);
+    }
+    .panel-details {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .detail-row {
+      display: flex;
+      justify-content: space-between;
+      gap: 8px;
+    }
+    .detail-label {
+      font-family: 'DM Sans', sans-serif;
+      font-size: 11px;
+      color: rgba(242, 237, 228, 0.5);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      white-space: nowrap;
+    }
+    .detail-value {
+      font-family: 'DM Sans', sans-serif;
+      font-size: 13px;
+      color: var(--fbv-cream);
+      text-align: right;
+    }
+    .panel-note {
+      font-family: 'DM Sans', sans-serif;
+      font-size: 12px;
+      color: rgba(242, 237, 228, 0.55);
+      line-height: 1.5;
+    }
+    .panel-cta {
+      display: block;
+      margin-top: auto;
+      background: var(--fbv-teal);
+      color: var(--fbv-cream);
+      text-align: center;
+      padding: 14px;
+      border-radius: 8px;
+      text-decoration: none;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 14px;
+      font-weight: 500;
+      letter-spacing: 0.03em;
+      transition: background 0.2s, color 0.2s;
+    }
+    .panel-cta:hover { background: var(--fbv-teal-light); color: var(--fbv-green); }
+
+    /* ── Pulse animation ── */
+    @keyframes lotPulse {
+      0%   { r: 14px; opacity: 0.6; }
+      100% { r: 26px; opacity: 0; }
+    }
+    .pulse-ring {
+      animation: lotPulse 2.2s ease-out infinite;
+      fill: #2ECC8F;
+    }
+
+    /* ── Dolphin Bay label ── */
+    .water-label {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 15px;
+      font-weight: 600;
+      font-style: italic;
+      color: rgba(155, 216, 216, 0.75);
+      white-space: nowrap;
+      letter-spacing: 0.08em;
+      text-shadow: 0 1px 4px rgba(0,0,0,0.7);
+      pointer-events: none;
+    }
+
+    /* ── Bottom note ── */
+    #fbv-map-note {
+      position: absolute;
+      bottom: 10px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 1000;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 11px;
+      color: rgba(242, 237, 228, 0.55);
+      white-space: nowrap;
+      pointer-events: none;
+      text-shadow: 0 1px 3px rgba(0,0,0,0.6);
+      letter-spacing: 0.03em;
+    }
+
+    /* ── Responsive ── */
+    @media (max-width: 600px) {
+      #fbv-brand-panel {
+        padding: 8px 10px;
+      }
+      #fbv-wordmark { display: none; }
+
+      #fbv-legend { display: none; }
+      #legend-toggle { display: block; }
+
+      #lot-detail-panel {
+        top: auto; bottom: 0;
+        left: 0; right: 0;
+        width: 100%;
+        height: 60%;
+        transform: translateY(100%);
+        border-left: none;
+        border-top: 1px solid rgba(42, 140, 126, 0.3);
+        transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+      }
+      #lot-detail-panel.panel-open {
+        transform: translateY(0);
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div id="map"></div>
+
+  <!-- Brand panel -->
+  <div id="fbv-brand-panel">
+    <div id="fbv-badge">FBV</div>
+    <div id="fbv-wordmark">
+      <span class="fbv-name">Finca Buena Vida</span>
+      <span class="fbv-sub">Isla San Cristóbal · Panama</span>
+    </div>
+  </div>
+
+  <!-- Legend panel -->
+  <div id="fbv-legend">
+    <div class="legend-title">Lot Availability</div>
+    <div class="legend-row"><div class="legend-dot" style="background:#2ECC8F"></div><span class="legend-row-label">For Sale</span></div>
+    <div class="legend-row"><div class="legend-dot" style="background:#8BAFC4"></div><span class="legend-row-label">Not Available</span></div>
+    <div class="legend-section-title">Type</div>
+    <div class="legend-type-row">
+      <svg width="14" height="14" viewBox="0 0 14 14"><circle cx="7" cy="7" r="6" fill="#2A8C7E" stroke="#fff" stroke-width="1.5"/></svg>
+      <span class="legend-row-label">Shore Lot</span>
+    </div>
+    <div class="legend-type-row">
+      <svg width="14" height="14" viewBox="0 0 14 14"><rect x="1" y="1" width="12" height="12" rx="3" fill="#2A8C7E" stroke="#fff" stroke-width="1.5"/></svg>
+      <span class="legend-row-label">Inland Lot</span>
+    </div>
+  </div>
+
+  <!-- Legend mobile toggle -->
+  <button id="legend-toggle">◉ Legend</button>
+
+  <!-- Bottom disclaimer -->
+  <div id="fbv-map-note">Map and placemark locations are approximate.</div>
+
+  <!-- Detail panel -->
+  <div id="lot-detail-panel">
+    <button id="panel-close">✕</button>
+    <div class="panel-header">
+      <span class="panel-lot-name" id="panel-lot-name">Lot S4</span>
+      <span class="panel-type-badge" id="panel-type-badge">Shore</span>
+    </div>
+    <div class="panel-status">
+      <span class="panel-status-dot" id="panel-status-dot"></span>
+      <span class="panel-status-label" id="panel-status-label">Available</span>
+    </div>
+    <div class="panel-divider"></div>
+    <div class="panel-details">
+      <div class="detail-row"><span class="detail-label">Type</span><span class="detail-value" id="panel-detail-type">Shoreline Lot</span></div>
+      <div class="detail-row"><span class="detail-label">Community</span><span class="detail-value">Finca Buena Vida</span></div>
+      <div class="detail-row"><span class="detail-label">Island</span><span class="detail-value">Isla San Cristóbal, Panama</span></div>
+    </div>
+    <p class="panel-note">Contact us for lot dimensions, pricing, and a private tour of the property.</p>
+    <a class="panel-cta" href="mailto:info@fincabuenavida.com">Inquire About This Lot</a>
+  </div>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script>
+    // ═══════════════════════════════════════════════════════════════
+    // CONFIGURATION — edit these freely
+    // ═══════════════════════════════════════════════════════════════
+
+    const STATUS_CONFIG = {
+      'for-sale':      { color: '#2ECC8F', label: 'For Sale' },
+      'not-available': { color: '#8BAFC4', label: 'Not Available' }
+    };
+
+    // Edit these freely — one line per lot
+    const LOT_STATUS = {
+      S1: 'not-available', S2: 'not-available', S3: 'not-available', S4: 'not-available',
+      S5: 'not-available', S6: 'for-sale',      S7: 'not-available', S8: 'not-available',
+      S9: 'not-available', S10: 'not-available', S11: 'not-available', S12: 'not-available',
+      I1: 'not-available', I2: 'not-available', I3: 'not-available', I4: 'not-available',
+      I5: 'not-available', I6: 'not-available', I7: 'not-available',
+      I9: 'not-available', I10: 'not-available', I11: 'not-available'
+    };
+
+    // ═══════════════════════════════════════════════════════════════
+    // MAP DATA
+    // ═══════════════════════════════════════════════════════════════
+
+    const BOUNDARY = [
+      [9.218951220588618,-82.25300912997631],[9.219384249422555,-82.25298489955198],
+      [9.219690335436264,-82.25301055272064],[9.220888771190678,-82.25335865731239],
+      [9.221157267088776,-82.25359223411978],[9.221449710909228,-82.25367354613205],
+      [9.221549967898216,-82.25372583186193],[9.221624891357511,-82.25401530343778],
+      [9.22127373485608,-82.25399538681056],[9.221276028868534,-82.25410719826939],
+      [9.22143761909726,-82.25412228491182],[9.221417434343685,-82.25430715273826],
+      [9.221508999359264,-82.25437405199094],[9.221467504423801,-82.25456798418536],
+      [9.22168687721145,-82.25454360302265],[9.221748627475465,-82.25462511547912],
+      [9.222079506240053,-82.2546858875298],[9.222207909721837,-82.25504541449699],
+      [9.222102788404758,-82.25509637620358],[9.222238174367003,-82.25525937126868],
+      [9.222400311825883,-82.25522944248277],[9.222476885182298,-82.25517434379746],
+      [9.222570206062173,-82.25521297016866],[9.222571957958618,-82.25527463225296],
+      [9.222617380401624,-82.25530330929416],[9.22265855426228,-82.2554047347181],
+      [9.222624761366539,-82.25551730430165],[9.222574383380907,-82.25554316590834],
+      [9.222582358743042,-82.25562619142663],[9.222687406164361,-82.255633209663],
+      [9.222709220062169,-82.25567577804836],[9.222763019550026,-82.25568297123341],
+      [9.222865755164657,-82.25568855122737],[9.223069246930107,-82.25562461064965],
+      [9.223182234267844,-82.25555515756585],[9.223355477823203,-82.25535186925383],
+      [9.223419184664269,-82.25527023841136],[9.223390085141768,-82.25521340051181],
+      [9.223437977652191,-82.25513191193775],[9.223492043015494,-82.25513998906986],
+      [9.223524598194233,-82.25510953710753],[9.223551970519019,-82.25511687246684],
+      [9.223636437189388,-82.25491840499389],[9.223801366522387,-82.25498573386048],
+      [9.223841281246317,-82.25512275081195],[9.223891183741619,-82.25532235783145],
+      [9.223929970643997,-82.25548387005614],[9.224044013211831,-82.25547311843009],
+      [9.224049044647748,-82.25542846442839],[9.224109360714747,-82.25541514970949],
+      [9.224256673448822,-82.25550868033194],[9.224402611601862,-82.25564060520048],
+      [9.224679601487432,-82.25572201664244],[9.224703451165778,-82.25583911929287],
+      [9.224673371477882,-82.25596970067653],[9.224884231875134,-82.25622782867696],
+      [9.22496945117858,-82.25644974725802],[9.225021289061567,-82.25671858043192],
+      [9.224907474950008,-82.25695436443479],[9.224828245641463,-82.25698586865532],
+      [9.22473268645782,-82.25690401722673],[9.224629864693139,-82.25704109716862],
+      [9.224636220056928,-82.257171320732],[9.224768340903415,-82.25732844481753],
+      [9.224904622461038,-82.25739251444384],[9.22501515411736,-82.25755504228167],
+      [9.224970015063446,-82.25773701688966],[9.225019484752142,-82.25789500703144],
+      [9.225056001150209,-82.25807190138697],[9.225055661942015,-82.25830785190094],
+      [9.225002920339714,-82.25843023182976],[9.224924009155837,-82.25848069712406],
+      [9.224906997904597,-82.25855288154628],[9.224954203481117,-82.25855416922349],
+      [9.224918433496121,-82.25864878606949],[9.224859071267669,-82.25865091066889],
+      [9.22488264971253,-82.25879784733469],[9.22488641056713,-82.25892781910191],
+      [9.224963953113695,-82.25905169771221],[9.22513514513876,-82.25930177827901],
+      [9.225378699692419,-82.25963798546762],[9.225188798078507,-82.25982959774852],
+      [9.224461436491188,-82.260375949135],[9.223787861596991,-82.26087827809393],
+      [9.223285672565554,-82.26132296856613],[9.222310600700784,-82.26238086496527],
+      [9.21959963279652,-82.26113953298649],[9.219777548234013,-82.25780941752544],
+      [9.219105318547886,-82.25384264766811],[9.218951220588618,-82.25300912997631]
+    ];
+
+    const TRAILS = [
+      { name: "South Shore Common Area Trail", coords: [[9.219337329172168,-82.25306707540101],[9.219443817865944,-82.25378656197977],[9.219485626745413,-82.25403966479615],[9.219502537327056,-82.25449598168223],[9.219589276834327,-82.25491428607675],[9.219701403192291,-82.25514139719681]] },
+      { name: "Inland Trail", coords: [[9.223744528665964,-82.25765958093528],[9.223682274610805,-82.25768362598268],[9.221960987266995,-82.25865250523684],[9.221876533073129,-82.2586957138022],[9.22207607158488,-82.25930093884666],[9.222187523439519,-82.25984563699951],[9.222149710569056,-82.2603284792997],[9.222097909931142,-82.26056723353696],[9.222035383446819,-82.26068903140927],[9.221576256417231,-82.26058380219382],[9.221219856095468,-82.26046323794041],[9.22089514985305,-82.26049296361425],[9.220586912964849,-82.2604015990304],[9.220364104735452,-82.26034360848615],[9.220244887816611,-82.26028490140411],[9.220226994856009,-82.26069366008574]] },
+      { name: "Common Dock Trail", coords: [[9.222000519667665,-82.25686402610847],[9.221967205043054,-82.25642554638502],[9.222098466908514,-82.25611020002019],[9.22216336965433,-82.25595186727188],[9.222155916063132,-82.25552718778785],[9.22222935790314,-82.25522170812864]] },
+      { name: "Old Connector Trail", coords: [[9.221874783476887,-82.2586825565683],[9.221823610657705,-82.25830822839967],[9.221896553101969,-82.25780053122827],[9.221941143407838,-82.25755283732511],[9.221994931103723,-82.25731629225903],[9.222069080648206,-82.25701847519471]] },
+      { name: "Trail to South Shore", coords: [[9.223672920371195,-82.2576771187842],[9.222646420643898,-82.25737936750052],[9.222150507493872,-82.25716631286352],[9.221995411917057,-82.25686151456952],[9.221250353710223,-82.25615531353542],[9.220186417890213,-82.25533949121079],[9.219712020779179,-82.25514726277117]] }
+    ];
+
+    const PROPERTIES = [
+      // Shore lots
+      { name: 'S1',  lat: 9.225210808303348, lng: -82.2595626290793,  type: 'Shore' },
+      { name: 'S2',  lat: 9.224777940087789, lng: -82.25862936060976, type: 'Shore' },
+      { name: 'S3',  lat: 9.224929252747723, lng: -82.25767985785609, type: 'Shore' },
+      { name: 'S4',  lat: 9.224858215750888, lng: -82.25683690856678, type: 'Shore' },
+      { name: 'S5',  lat: 9.224432898743641, lng: -82.25572456797636, type: 'Shore' },
+      { name: 'S6',  lat: 9.223981358698756, lng: -82.25547273737922, type: 'Shore' },
+      { name: 'S7',  lat: 9.223187810878434, lng: -82.25556968388672, type: 'Shore' },
+      { name: 'S8',  lat: 9.221295130895335, lng: -82.2537497834012,  type: 'Shore' },
+      { name: 'S9',  lat: 9.220704981405364, lng: -82.25346171407455, type: 'Shore' },
+      { name: 'S10', lat: 9.22031696130216,  lng: -82.25335165639555, type: 'Shore' },
+      { name: 'S11', lat: 9.219862011491886, lng: -82.25318042941105, type: 'Shore' },
+      { name: 'S12', lat: 9.219179706703402, lng: -82.25320324367277, type: 'Shore' },
+      // Inland lots
+      { name: 'I1',  lat: 9.223727809582542, lng: -82.25810723617678, type: 'Inland' },
+      { name: 'I2',  lat: 9.223054591782931, lng: -82.25846601491355, type: 'Inland' },
+      { name: 'I3',  lat: 9.222439835396868, lng: -82.25897779713326, type: 'Inland' },
+      { name: 'I4',  lat: 9.22298273723634,  lng: -82.26015267127453, type: 'Inland' },
+      { name: 'I5',  lat: 9.222486368982464, lng: -82.2612484591159,  type: 'Inland' },
+      { name: 'I6',  lat: 9.221589469904156, lng: -82.2614995234366,  type: 'Inland' },
+      { name: 'I7',  lat: 9.220756621775671, lng: -82.26112953239544, type: 'Inland' },
+      { name: 'I9',  lat: 9.221105447627265, lng: -82.26013560351882, type: 'Inland' },
+      { name: 'I10', lat: 9.220282548077781, lng: -82.25998749136514, type: 'Inland' },
+      { name: 'I11', lat: 9.22036957232393,  lng: -82.25804055976479, type: 'Inland' }
+    ];
+
+    const LANDMARKS = [
+      { name: 'Reservoir & Grandfather Trees', lat: 9.221606795703785, lng: -82.25907086268118, icon: '🌳' },
+      { name: 'Common Dock',                   lat: 9.222273107984142, lng: -82.25502313991612, icon: '⚓' }
+    ];
+
+    const STRUCTURES = [
+      { name: 'Dolphin Blue Paradise', lat: 9.224882506027079, lng: -82.25649723277208 },
+      { name: 'Finca Coconuts',        lat: 9.223906654089514, lng: -82.255029200119    },
+      { name: 'Finca Montezuma',       lat: 9.224909535322356, lng: -82.25829116084813 },
+      { name: 'Vista Paraiso',         lat: 9.220354135267428, lng: -82.25740415957685 },
+      { name: 'Casa Del Mar',          lat: 9.221136767903761, lng: -82.2530421704993  },
+      { name: 'Casita Del Mar',        lat: 9.219862438122732, lng: -82.25273203394036 }
+    ];
+
+    // ═══════════════════════════════════════════════════════════════
+    // MAP INIT
+    // ═══════════════════════════════════════════════════════════════
+
+    const map = L.map('map', {
+      center: [9.2219, -82.2568],
+      zoom: 16,
+      zoomControl: false
+    });
+
+    L.control.zoom({ position: 'topright' }).addTo(map);
+
+    L.tileLayer(
+      'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+      { attribution: 'Tiles &copy; Esri', maxZoom: 20 }
+    ).addTo(map);
+
+    // ═══════════════════════════════════════════════════════════════
+    // BOUNDARY POLYGON
+    // ═══════════════════════════════════════════════════════════════
+
+    L.polygon(BOUNDARY, {
+      color: '#F2EDE4',
+      weight: 2,
+      dashArray: '6, 6',
+      opacity: 0.9,
+      fillColor: 'rgba(42, 140, 126, 0.10)',
+      fillOpacity: 0.10
+    }).addTo(map);
+
+    // ═══════════════════════════════════════════════════════════════
+    // TRAILS (shadow line beneath + teal line on top)
+    // ═══════════════════════════════════════════════════════════════
+
+    TRAILS.forEach(trail => {
+      // Shadow underline for readability against satellite imagery
+      L.polyline(trail.coords, {
+        color: 'rgba(0,0,0,0.3)',
+        weight: 3,
+        dashArray: '4, 5',
+        opacity: 1
+      }).addTo(map);
+
+      L.polyline(trail.coords, {
+        color: '#2ECC8F',
+        weight: 2,
+        dashArray: '4, 5',
+        opacity: 0.7
+      })
+        .bindTooltip(trail.name, { permanent: false, direction: 'top' })
+        .addTo(map);
+    });
+
+    // ═══════════════════════════════════════════════════════════════
+    // LOT MARKERS
+    // ═══════════════════════════════════════════════════════════════
+
+    function makeLotIcon(prop, index) {
+      const status = LOT_STATUS[prop.name] || 'not-available';
+      const cfg    = STATUS_CONFIG[status];
+      const color  = cfg.color;
+      const isShore  = prop.type === 'Shore';
+      const size     = isShore ? 36 : 30;
+      const half     = size / 2;
+      const isAvail  = status === 'for-sale';
+      const delay    = (index * 0.3).toFixed(1);
+
+      let shape;
+      if (isShore) {
+        shape = `<circle cx="${half}" cy="${half}" r="${half - 2}" fill="${color}" stroke="#ffffff" stroke-width="2"/>`;
+      } else {
+        shape = `<rect x="2" y="2" width="${size - 4}" height="${size - 4}" rx="6" fill="${color}" stroke="#ffffff" stroke-width="2"/>`;
+      }
+
+      const pulseRing = isAvail
+        ? `<circle class="pulse-ring" cx="${half}" cy="${half}" r="14" style="animation-delay:${delay}s;transform-origin:${half}px ${half}px"/>`
+        : '';
+
+      const svgSize = isAvail ? size + 20 : size;
+      const offset  = isAvail ? 10 : 0;
+
+      const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${svgSize}" height="${svgSize}" viewBox="0 0 ${svgSize} ${svgSize}" style="filter:drop-shadow(0 2px 4px rgba(0,0,0,0.5));overflow:visible">
+        ${pulseRing ? `<g transform="translate(${offset},${offset})">${pulseRing}</g>` : ''}
+        <g transform="translate(${offset},${offset})">
+          ${shape}
+          <text x="${half}" y="${half + 4}" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="11" font-weight="bold" fill="#ffffff">${prop.name}</text>
+        </g>
+      </svg>`;
+
+      return L.divIcon({
+        html: svg,
+        iconSize:   [svgSize, svgSize],
+        iconAnchor: [svgSize / 2, svgSize / 2],
+        className:  ''
+      });
+    }
+
+    PROPERTIES.forEach((prop, index) => {
+      const status = LOT_STATUS[prop.name] || 'not-available';
+      const cfg    = STATUS_CONFIG[status];
+      const tooltip = `Lot ${prop.name} · ${prop.type} · ${cfg.label}`;
+
+      L.marker([prop.lat, prop.lng], { icon: makeLotIcon(prop, index) })
+        .bindTooltip(tooltip, { permanent: false, direction: 'top' })
+        .on('click', () => openPanel(prop))
+        .addTo(map);
+    });
+
+    // ═══════════════════════════════════════════════════════════════
+    // LANDMARK MARKERS
+    // ═══════════════════════════════════════════════════════════════
+
+    LANDMARKS.forEach(lm => {
+      const icon = L.divIcon({
+        html: `<div style="width:28px;height:28px;border-radius:50%;background:#1A3C34;border:1.5px solid rgba(242,237,228,0.5);display:flex;align-items:center;justify-content:center;font-size:14px;text-shadow:0 0 4px #fff,0 1px 3px rgba(0,0,0,0.7);box-shadow:0 2px 6px rgba(0,0,0,0.5)">${lm.icon}</div>`,
+        iconSize:   [28, 28],
+        iconAnchor: [14, 14],
+        className:  ''
+      });
+      L.marker([lm.lat, lm.lng], { icon })
+        .bindTooltip(lm.name, { permanent: false, direction: 'top' })
+        .addTo(map);
+    });
+
+    // ═══════════════════════════════════════════════════════════════
+    // STRUCTURE MARKERS (existing buildings)
+    // ═══════════════════════════════════════════════════════════════
+
+    STRUCTURES.forEach(s => {
+      const icon = L.divIcon({
+        html: `<div style="width:28px;height:28px;border-radius:50%;background:#1A3C34;border:1.5px solid rgba(242,237,228,0.4);display:flex;align-items:center;justify-content:center;font-size:14px;box-shadow:0 2px 6px rgba(0,0,0,0.5)">🏡</div>`,
+        iconSize:   [28, 28],
+        iconAnchor: [14, 14],
+        className:  ''
+      });
+      L.marker([s.lat, s.lng], { icon })
+        .bindTooltip(s.name, { permanent: false, direction: 'top' })
+        .addTo(map);
+    });
+
+    // ═══════════════════════════════════════════════════════════════
+    // WATER LABELS
+    // ═══════════════════════════════════════════════════════════════
+
+    // Dolphin Bay — position in open water; adjust lat/lng as needed.
+    L.marker([9.223522430157168, -82.25204969497608], {
+      icon: L.divIcon({
+        html: '<div class="water-label">Dolphin Bay</div>',
+        iconSize:   [120, 24],
+        iconAnchor: [60, 12],
+        className:  ''
+      }),
+      interactive: false
+    }).addTo(map);
+
+    // ═══════════════════════════════════════════════════════════════
+    // DETAIL PANEL
+    // ═══════════════════════════════════════════════════════════════
+
+    const panel     = document.getElementById('lot-detail-panel');
+    const panelClose = document.getElementById('panel-close');
+
+    function openPanel(prop) {
+      const status = LOT_STATUS[prop.name] || 'not-available';
+      const cfg    = STATUS_CONFIG[status];
+
+      document.getElementById('panel-lot-name').textContent  = 'Lot ' + prop.name;
+      document.getElementById('panel-type-badge').textContent = prop.type;
+      document.getElementById('panel-status-dot').style.background = cfg.color;
+      document.getElementById('panel-status-label').textContent     = cfg.label;
+      document.getElementById('panel-detail-type').textContent = prop.type === 'Shore' ? 'Shoreline Lot' : 'Inland Lot';
+
+      panel.classList.add('panel-open');
+    }
+
+    function closePanel() {
+      panel.classList.remove('panel-open');
+    }
+
+    panelClose.addEventListener('click', closePanel);
+
+    map.on('click', closePanel);
+
+    // ═══════════════════════════════════════════════════════════════
+    // LEGEND MOBILE TOGGLE
+    // ═══════════════════════════════════════════════════════════════
+
+    const legend       = document.getElementById('fbv-legend');
+    const legendToggle = document.getElementById('legend-toggle');
+
+    legendToggle.addEventListener('click', () => {
+      const visible = legend.style.display === 'block';
+      legend.style.display = visible ? 'none' : 'block';
+    });
+  </script>
+</body>
+</html>

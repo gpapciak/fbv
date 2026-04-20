@@ -356,18 +356,11 @@
     </div>
 
     <div class="map-wrapper fade-in delay-1">
-      <div class="map-legend" role="list" aria-label="Map legend">
-        <div class="legend-item" role="listitem"><div class="legend-dot owner-occupied"></div> Owner Occupied</div>
-        <div class="legend-item" role="listitem"><div class="legend-dot for-sale"></div> For Sale</div>
-        <div class="legend-item" role="listitem"><div class="legend-dot for-rent"></div> For Rent</div>
-        <div class="legend-item" role="listitem"><div class="legend-dot available"></div> Available</div>
-      </div>
+      <div style="position:relative; overflow:hidden; border-radius:12px;">
 
-      <div style="position:relative; overflow:hidden;">
-        <div id="map-tooltip" role="tooltip" aria-live="polite"></div>
-
+        <!-- PLACEHOLDER SVG kept below for fallback — hidden when iframe loads -->
         <svg id="property-map" viewBox="0 0 740 580" xmlns="http://www.w3.org/2000/svg"
-             aria-label="Finca Buena Vida property map" role="img">
+             aria-label="Finca Buena Vida property map" role="img" style="display:none">
 
           <defs>
             <linearGradient id="ocean-grad" x1="0%" y1="100%" x2="100%" y2="0%">
@@ -666,12 +659,16 @@
           <g id="labels-layer"></g>
 
         </svg>
+
+        <iframe
+          src="fbv-map.html"
+          title="Finca Buena Vida Interactive Property Map"
+          style="width:100%;height:600px;border:none;border-radius:12px;display:block;"
+          allowfullscreen
+          loading="lazy"
+        ></iframe>
       </div>
     </div>
-
-    <p class="fade-in" style="text-align:center; margin-top:1.5rem; font-family:var(--font-sans); font-size:0.85rem; color:var(--text-light); font-style:italic">
-      Lot boundaries are schematic. Contact us for surveys and exact parcel information.
-    </p>
   </div>
 </section>
 
