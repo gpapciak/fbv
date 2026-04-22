@@ -363,18 +363,20 @@
     #rental-panel.panel-open { transform: translateX(0); }
     #rental-panel-close {
       position: absolute;
-      top: 16px; right: 16px;
+      top: 12px; right: 12px;
       z-index: 10;
-      background: none;
+      background: rgba(0, 0, 0, 0.55);
       border: none;
-      color: rgba(242, 237, 228, 0.5);
-      font-size: 18px;
+      color: rgba(255, 255, 255, 0.9);
+      font-size: 16px;
       cursor: pointer;
-      padding: 4px 8px;
+      width: 28px; height: 28px;
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
       line-height: 1;
-      transition: color 0.2s;
+      transition: background 0.2s, color 0.2s;
     }
-    #rental-panel-close:hover { color: var(--fbv-cream); }
+    #rental-panel-close:hover { background: rgba(0,0,0,0.8); color: #fff; }
     #rental-panel-image {
       width: 100%;
       height: 200px;
@@ -673,7 +675,7 @@
     ];
 
     const STRUCTURES = [
-      { name: 'Dolphin Blue Paradise', lat: 9.224882506027079, lng: -82.25649723277208 },
+      { name: 'Dolphin Blue Paradise', lat: 9.225520, lng: -82.25683690856678 },
       { name: 'Finca Coconuts',        lat: 9.223906654089514, lng: -82.255029200119    },
       { name: 'Finca Montezuma',       lat: 9.224909535322356, lng: -82.25829116084813 },
       { name: 'Vista Paraiso',         lat: 9.220354135267428, lng: -82.25740415957685 },
