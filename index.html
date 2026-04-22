@@ -702,11 +702,11 @@
     </div>
 
     <div class="properties-tabs" role="tablist">
-      <button class="tab-btn active" role="tab" aria-selected="true" data-tab="for-sale" aria-controls="for-sale">For Sale</button>
-      <button class="tab-btn" role="tab" aria-selected="false" data-tab="for-rent" aria-controls="for-rent">Rentals</button>
+      <button class="tab-btn" role="tab" aria-selected="false" data-tab="for-sale" aria-controls="for-sale">For Sale</button>
+      <button class="tab-btn active" role="tab" aria-selected="true" data-tab="for-rent" aria-controls="for-rent">Rentals</button>
     </div>
 
-    <div id="for-sale" class="tab-panel active" role="tabpanel">
+    <div id="for-sale" class="tab-panel" role="tabpanel">
       <div class="listings-grid" id="for-sale-grid">
         <!-- Populated by JS -->
         <div style="grid-column:1/-1; padding:2rem; text-align:center; color:var(--text-light); font-style:italic">
@@ -715,7 +715,7 @@
       </div>
     </div>
 
-    <div id="for-rent" class="tab-panel" role="tabpanel">
+    <div id="for-rent" class="tab-panel active" role="tabpanel">
       <div class="listings-grid" id="for-rent-grid">
         <div style="grid-column:1/-1; padding:2rem; text-align:center; color:var(--text-light); font-style:italic">
           Loading listings…
