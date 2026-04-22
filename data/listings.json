@@ -45,9 +45,16 @@
       "lotNumber": null,
       "title": "Finca Montezuma",
       "type": "rental",
-      "shortDescription": "A private rental property within the FBV community.",
+      "shortDescription": "A tropical food forest and sanctuary offering farmstays, nature & chocolate tours, a plant nursery and farm shop.",
       "fullDescription": null,
       "amenities": [],
+      "image": "assets/images/finca-montezuma.jpg",
+      "website": "https://finca-montezuma.com/",
+      "airbnbUnits": [
+        { "name": "Cabin over the Water", "id": "22120295" },
+        { "name": "Whimsical Treehouse",  "id": "14887709" },
+        { "name": "Treehouse XL",         "id": "29064046" }
+      ],
       "bookingLink": null,
       "ownerContact": null,
       "images": [],

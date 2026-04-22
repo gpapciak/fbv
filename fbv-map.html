@@ -677,7 +677,7 @@
     const STRUCTURES = [
       { name: 'Dolphin Blue Paradise', lat: 9.225520, lng: -82.25683690856678 },
       { name: 'Finca Coconuts',        lat: 9.223906654089514, lng: -82.255029200119    },
-      { name: 'Finca Montezuma',       lat: 9.224909535322356, lng: -82.25829116084813 },
+      { name: 'Finca Montezuma',       lat: 9.225520, lng: -82.25862936060976 },
       { name: 'Vista Paraiso',         lat: 9.220354135267428, lng: -82.25740415957685 },
       { name: 'Casa Del Mar',          lat: 9.221136767903761, lng: -82.2530421704993  },
       { name: 'Casita Del Mar',        lat: 9.219862438122732, lng: -82.25273203394036 }
@@ -966,31 +966,51 @@
       const ctaEl   = document.getElementById('rental-panel-cta');
       const noteEl  = document.getElementById('rental-panel-note');
 
-      if (listing && listing.airbnbId) {
+      // Image
+      if (listing && listing.image) {
+        imageEl.innerHTML = `<img src="${listing.image}" alt="${listing.title}" style="width:100%;height:200px;object-fit:cover;display:block;">`;
+      } else if (listing && listing.airbnbId) {
         imageEl.innerHTML = `<div class="airbnb-embed-frame" data-id="${listing.airbnbId}" data-view="home" data-hide-price="true" style="width:100%;height:200px;"></div>`;
-        // Remove and re-add SDK so it processes the newly injected frame
         const prev = document.querySelector('script[src*="airbnb_jssdk"]');
         if (prev) prev.remove();
         const sdk = document.createElement('script');
         sdk.src   = 'https://www.airbnb.com/embeddable/airbnb_jssdk';
         sdk.async = true;
         document.body.appendChild(sdk);
-        ctaEl.textContent = 'Book on Airbnb';
-        ctaEl.href        = listing.bookingLink || ('#');
-        noteEl.textContent = '';
       } else {
         imageEl.innerHTML = '<div class="rental-panel-placeholder">🏡</div>';
-        if (listing && listing.bookingLink) {
-          ctaEl.textContent  = 'Visit Site';
-          ctaEl.href         = listing.bookingLink;
-          noteEl.textContent = listing.externalOnly
-            ? 'Independent business — contact them directly for bookings and availability.'
-            : '';
-        } else {
-          ctaEl.textContent  = 'Contact for Availability';
-          ctaEl.href         = 'mailto:info@fincabuenavida.com?subject=' + encodeURIComponent(name + ' Rental Inquiry');
-          noteEl.textContent = 'Contact the FBV community for rental availability.';
-        }
+      }
+
+      // Airbnb units list
+      const existingUnits = document.getElementById('rental-panel-units');
+      if (existingUnits) existingUnits.remove();
+      if (listing && listing.airbnbUnits && listing.airbnbUnits.length) {
+        const unitsDiv = document.createElement('div');
+        unitsDiv.id = 'rental-panel-units';
+        unitsDiv.style.cssText = 'display:flex;flex-direction:column;gap:6px;margin:0;';
+        unitsDiv.innerHTML = listing.airbnbUnits.map(u =>
+          `<a href="https://www.airbnb.com/rooms/${u.id}" target="_blank" rel="noopener"
+              style="display:flex;align-items:center;gap:7px;font-family:'DM Sans',sans-serif;font-size:13px;color:#2ECC8F;text-decoration:none;">
+             <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm0 4.5c1.243 0 2.25 1.007 2.25 2.25S13.243 9 12 9 9.75 7.993 9.75 6.75 10.757 4.5 12 4.5zm5.25 13.5H6.75c-.414 0-.75-.336-.75-.75 0-3.176 2.268-5.813 5.25-6.408V9.75h1.5v1.092c2.982.595 5.25 3.232 5.25 6.408 0 .414-.336.75-.75.75z"/></svg>
+             ${u.name}
+           </a>`
+        ).join('');
+        noteEl.insertAdjacentElement('beforebegin', unitsDiv);
+      }
+
+      // CTA
+      if (listing && listing.website) {
+        ctaEl.textContent = 'Visit Website';
+        ctaEl.href        = listing.website;
+        noteEl.textContent = '';
+      } else if (listing && listing.bookingLink) {
+        ctaEl.textContent  = listing.airbnbId ? 'Book on Airbnb' : 'Visit Site';
+        ctaEl.href         = listing.bookingLink;
+        noteEl.textContent = '';
+      } else {
+        ctaEl.textContent  = 'Contact for Availability';
+        ctaEl.href         = 'mailto:info@fincabuenavida.com?subject=' + encodeURIComponent(name + ' Rental Inquiry');
+        noteEl.textContent = 'Contact the FBV community for rental availability.';
       }
 
       rentalPanel.classList.add('panel-open');
