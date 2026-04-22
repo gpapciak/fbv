@@ -343,6 +343,103 @@
       letter-spacing: 0.03em;
     }
 
+    /* ── Rental panel ── */
+    #rental-panel {
+      position: fixed;
+      top: 0; right: 0;
+      width: 300px;
+      height: 100%;
+      background: rgba(18, 42, 36, 0.96);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      z-index: 2000;
+      transform: translateX(100%);
+      transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+      display: flex;
+      flex-direction: column;
+      border-left: 1px solid rgba(42, 140, 126, 0.3);
+      overflow-y: auto;
+    }
+    #rental-panel.panel-open { transform: translateX(0); }
+    #rental-panel-close {
+      position: absolute;
+      top: 16px; right: 16px;
+      z-index: 10;
+      background: none;
+      border: none;
+      color: rgba(242, 237, 228, 0.5);
+      font-size: 18px;
+      cursor: pointer;
+      padding: 4px 8px;
+      line-height: 1;
+      transition: color 0.2s;
+    }
+    #rental-panel-close:hover { color: var(--fbv-cream); }
+    #rental-panel-image {
+      width: 100%;
+      height: 200px;
+      flex-shrink: 0;
+      overflow: hidden;
+      background: #0d2018;
+    }
+    #rental-panel-image .airbnb-embed-frame,
+    #rental-panel-image iframe {
+      width: 100% !important;
+      height: 200px !important;
+      border: none;
+    }
+    .rental-panel-placeholder {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 52px;
+      background: linear-gradient(135deg, #1a3a2a 0%, #2d5a3d 100%);
+    }
+    .rental-panel-body {
+      padding: 20px 24px 28px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      flex: 1;
+    }
+    .rental-panel-badge {
+      font-family: 'DM Sans', sans-serif;
+      font-size: 11px;
+      background: rgba(42, 140, 126, 0.3);
+      color: var(--fbv-teal-light);
+      padding: 3px 10px;
+      border-radius: 20px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      border: 1px solid rgba(46, 204, 143, 0.4);
+      align-self: flex-start;
+    }
+    .rental-panel-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 24px;
+      color: var(--fbv-cream);
+      font-weight: 600;
+      line-height: 1.2;
+      margin: 0;
+    }
+    .rental-panel-desc {
+      font-family: 'DM Sans', sans-serif;
+      font-size: 13px;
+      color: rgba(242, 237, 228, 0.7);
+      line-height: 1.55;
+      margin: 0;
+    }
+    .rental-panel-note {
+      font-family: 'DM Sans', sans-serif;
+      font-size: 11px;
+      color: rgba(242, 237, 228, 0.4);
+      font-style: italic;
+      line-height: 1.5;
+      margin: 0;
+    }
+
     /* ── Responsive ── */
     @media (max-width: 600px) {
       #fbv-brand-panel {
@@ -353,17 +450,17 @@
       #fbv-legend { display: none; }
       #legend-toggle { display: block; }
 
-      #lot-detail-panel {
+      #lot-detail-panel, #rental-panel {
         top: auto; bottom: 0;
         left: 0; right: 0;
         width: 100%;
-        height: 60%;
+        height: 65%;
         transform: translateY(100%);
         border-left: none;
         border-top: 1px solid rgba(42, 140, 126, 0.3);
         transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
       }
-      #lot-detail-panel.panel-open {
+      #lot-detail-panel.panel-open, #rental-panel.panel-open {
         transform: translateY(0);
       }
     }
@@ -425,6 +522,19 @@
     <p class="panel-note" id="panel-description" hidden></p>
     <p class="panel-note" id="panel-note"></p>
     <a class="panel-cta" id="panel-cta" href="mailto:info@fincabuenavida.com">Inquire About This Lot</a>
+  </div>
+
+  <!-- Rental detail panel -->
+  <div id="rental-panel">
+    <button id="rental-panel-close">✕</button>
+    <div id="rental-panel-image"></div>
+    <div class="rental-panel-body">
+      <span class="rental-panel-badge">For Rent</span>
+      <h2 class="rental-panel-title" id="rental-panel-title"></h2>
+      <p class="rental-panel-desc" id="rental-panel-desc"></p>
+      <p class="rental-panel-note" id="rental-panel-note"></p>
+      <a class="panel-cta" id="rental-panel-cta" href="#" target="_blank" rel="noopener">Visit Site</a>
+    </div>
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -724,16 +834,22 @@
     // STRUCTURE MARKERS (existing buildings)
     // ═══════════════════════════════════════════════════════════════
 
+    const RENTAL_CARD_NAMES = new Set(['Dolphin Blue Paradise', 'Finca Montezuma', 'Casa Del Mar', 'Casita Del Mar']);
+
     STRUCTURES.forEach(s => {
+      const isRental = RENTAL_CARD_NAMES.has(s.name);
       const icon = L.divIcon({
-        html: `<div style="width:28px;height:28px;border-radius:50%;background:#1A3C34;border:1.5px solid rgba(242,237,228,0.4);display:flex;align-items:center;justify-content:center;font-size:14px;box-shadow:0 2px 6px rgba(0,0,0,0.5)">🏡</div>`,
+        html: `<div style="width:28px;height:28px;border-radius:50%;background:${isRental ? '#2A6040' : '#1A3C34'};border:1.5px solid rgba(242,237,228,${isRental ? '0.7' : '0.4'});display:flex;align-items:center;justify-content:center;font-size:14px;box-shadow:0 2px 6px rgba(0,0,0,0.5);cursor:${isRental ? 'pointer' : 'default'}">🏡</div>`,
         iconSize:   [28, 28],
         iconAnchor: [14, 14],
         className:  ''
       });
-      L.marker([s.lat, s.lng], { icon })
-        .bindTooltip(s.name, { permanent: false, direction: 'top' })
-        .addTo(map);
+      const marker = L.marker([s.lat, s.lng], { icon })
+        .bindTooltip(s.name + (isRental ? ' — click for details' : ''), { permanent: false, direction: 'top' });
+      if (isRental) {
+        marker.on('click', () => openRentalPanel(s.name));
+      }
+      marker.addTo(map);
     });
 
     // ═══════════════════════════════════════════════════════════════
@@ -827,7 +943,61 @@
 
     panelClose.addEventListener('click', closePanel);
 
-    map.on('click', closePanel);
+    // ── Rental panel ──
+    const rentalPanel = document.getElementById('rental-panel');
+    document.getElementById('rental-panel-close').addEventListener('click', () => {
+      rentalPanel.classList.remove('panel-open');
+    });
+
+    function openRentalPanel(name) {
+      closePanel();
+
+      const listing = listingsData && listingsData.forRent
+        ? listingsData.forRent.find(r => r.title === name)
+        : null;
+
+      document.getElementById('rental-panel-title').textContent = name;
+      document.getElementById('rental-panel-desc').textContent =
+        (listing && listing.shortDescription) ? listing.shortDescription : '';
+
+      const imageEl = document.getElementById('rental-panel-image');
+      const ctaEl   = document.getElementById('rental-panel-cta');
+      const noteEl  = document.getElementById('rental-panel-note');
+
+      if (listing && listing.airbnbId) {
+        imageEl.innerHTML = `<div class="airbnb-embed-frame" data-id="${listing.airbnbId}" data-view="home" data-hide-price="true" style="width:100%;height:200px;"></div>`;
+        // Remove and re-add SDK so it processes the newly injected frame
+        const prev = document.querySelector('script[src*="airbnb_jssdk"]');
+        if (prev) prev.remove();
+        const sdk = document.createElement('script');
+        sdk.src   = 'https://www.airbnb.com/embeddable/airbnb_jssdk';
+        sdk.async = true;
+        document.body.appendChild(sdk);
+        ctaEl.textContent = 'Book on Airbnb';
+        ctaEl.href        = listing.bookingLink || ('#');
+        noteEl.textContent = '';
+      } else {
+        imageEl.innerHTML = '<div class="rental-panel-placeholder">🏡</div>';
+        if (listing && listing.bookingLink) {
+          ctaEl.textContent  = 'Visit Site';
+          ctaEl.href         = listing.bookingLink;
+          noteEl.textContent = listing.externalOnly
+            ? 'Independent business — contact them directly for bookings and availability.'
+            : '';
+        } else {
+          ctaEl.textContent  = 'Contact for Availability';
+          ctaEl.href         = 'mailto:info@fincabuenavida.com?subject=' + encodeURIComponent(name + ' Rental Inquiry');
+          noteEl.textContent = 'Contact the FBV community for rental availability.';
+        }
+      }
+
+      rentalPanel.classList.add('panel-open');
+    }
+
+    map.on('click', () => {
+      closePanel();
+      rentalPanel.classList.remove('panel-open');
+    });
 
     // ═══════════════════════════════════════════════════════════════
     // LEGEND MOBILE TOGGLE
