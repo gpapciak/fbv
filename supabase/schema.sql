@@ -31,6 +31,12 @@ CREATE TABLE IF NOT EXISTS owners (
   bio               TEXT,
   photo_url         TEXT,
   directory_opt_in  BOOLEAN NOT NULL DEFAULT false,
+  member_since      INTEGER,
+  fbv_pics_url      TEXT,
+  origin            TEXT,
+  property_goals    TEXT,
+  months_ideal      INTEGER CHECK (months_ideal BETWEEN 0 AND 12),
+  months_actual     INTEGER CHECK (months_actual BETWEEN 0 AND 12),
   is_admin          BOOLEAN NOT NULL DEFAULT false,
   created_at        TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   updated_at        TIMESTAMPTZ NOT NULL DEFAULT NOW(),
@@ -137,11 +143,14 @@ CREATE TABLE IF NOT EXISTS lot_listings (
   id                  UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   lot_number          INTEGER NOT NULL UNIQUE,
   status              TEXT NOT NULL DEFAULT 'not_available'
-                      CHECK (status IN ('for_sale','not_available')),
+                      CHECK (status IN ('for_sale','not_available','rental')),
   description         TEXT,
   price               TEXT,
   existing_structures TEXT,
   external_sale_url   TEXT,
+  acreage             TEXT,
+  email_contact       TEXT,
+  availability_notes  TEXT,
   photos              JSONB NOT NULL DEFAULT '[]',
   updated_by          UUID REFERENCES owners(id) ON DELETE SET NULL,
   updated_at          TIMESTAMPTZ NOT NULL DEFAULT NOW()
@@ -251,17 +260,17 @@ CREATE POLICY "documents_read_authenticated"
   TO authenticated
   USING (true);
 
--- Admins can insert documents
-CREATE POLICY "documents_insert_admin"
+-- Any authenticated owner can insert documents
+CREATE POLICY "documents_insert_authenticated"
   ON documents FOR INSERT
   TO authenticated
-  WITH CHECK (is_admin());
+  WITH CHECK (uploaded_by = current_owner_id());
 
--- Admins can delete documents
-CREATE POLICY "documents_delete_admin"
+-- Owners can delete their own documents; admins can delete any
+CREATE POLICY "documents_delete_own_or_admin"
   ON documents FOR DELETE
   TO authenticated
-  USING (is_admin());
+  USING (uploaded_by = current_owner_id() OR is_admin());
 
 -- ---- announcements policies ----
 
@@ -371,3 +380,17 @@ INSERT INTO lot_listings (lot_number, status) VALUES
   (207, 'not_available'), (208, 'not_available'), (209, 'not_available'),
   (210, 'not_available'), (211, 'not_available')
 ON CONFLICT (lot_number) DO NOTHING;
+
+-- ============================================================
+-- MIGRATIONS: Run these in Supabase SQL Editor on existing DBs
+-- ============================================================
+
+-- Add new lot_listings columns (safe to run multiple times)
+ALTER TABLE lot_listings ADD COLUMN IF NOT EXISTS acreage TEXT;
+ALTER TABLE lot_listings ADD COLUMN IF NOT EXISTS email_contact TEXT;
+ALTER TABLE lot_listings ADD COLUMN IF NOT EXISTS availability_notes TEXT;
+
+-- Update status constraint to include 'rental'
+ALTER TABLE lot_listings DROP CONSTRAINT IF EXISTS lot_listings_status_check;
+ALTER TABLE lot_listings ADD CONSTRAINT lot_listings_status_check
+  CHECK (status IN ('for_sale','not_available','rental'));

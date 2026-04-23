@@ -197,6 +197,20 @@
       border-left: 1px solid rgba(42, 140, 126, 0.3);
       overflow-y: auto;
     }
+    #lot-panel-image {
+      margin: -32px -24px 0;
+      height: 160px;
+      overflow: hidden;
+      background: #0d2018;
+      flex-shrink: 0;
+      display: none;
+    }
+    #lot-panel-image img {
+      width: 100%;
+      height: 160px;
+      object-fit: cover;
+      display: block;
+    }
     #lot-detail-panel.panel-open {
       transform: translateX(0);
     }
@@ -311,7 +325,6 @@
     }
     .pulse-ring {
       animation: lotPulse 2.2s ease-out infinite;
-      fill: #2ECC8F;
     }
 
     /* ── Dolphin Bay label ── */
@@ -485,6 +498,7 @@
   <div id="fbv-legend">
     <div class="legend-title">Lot Availability</div>
     <div class="legend-row"><div class="legend-dot" style="background:#2ECC8F"></div><span class="legend-row-label">For Sale</span></div>
+    <div class="legend-row"><div class="legend-dot" style="background:#E8A44A"></div><span class="legend-row-label">Rental</span></div>
     <div class="legend-row"><div class="legend-dot" style="background:#8BAFC4"></div><span class="legend-row-label">Not Available</span></div>
     <div class="legend-section-title">Type</div>
     <div class="legend-type-row">
@@ -505,6 +519,7 @@
 
   <!-- Detail panel -->
   <div id="lot-detail-panel">
+    <div id="lot-panel-image"></div>
     <button id="panel-close">✕</button>
     <div class="panel-header">
       <span class="panel-lot-name" id="panel-lot-name">Lot S4</span>
@@ -517,13 +532,18 @@
     <div class="panel-divider"></div>
     <div class="panel-details">
       <div class="detail-row"><span class="detail-label">Type</span><span class="detail-value" id="panel-detail-type">Shoreline Lot</span></div>
-      <div class="detail-row" id="panel-price-row" hidden><span class="detail-label">Price</span><span class="detail-value" id="panel-price"></span></div>
-      <div class="detail-row"><span class="detail-label">Community</span><span class="detail-value">Finca Buena Vida</span></div>
-      <div class="detail-row"><span class="detail-label">Island</span><span class="detail-value">Isla San Cristóbal, Panama</span></div>
+      <div class="detail-row"><span class="detail-label">Acreage</span><span class="detail-value" id="panel-acreage">—</span></div>
+      <div class="detail-row" id="panel-price-row" style="display:none"><span class="detail-label">Asking Price</span><span class="detail-value" id="panel-price"></span></div>
+      <div id="panel-avail-row" style="display:none;padding-top:2px">
+        <div style="font-family:'DM Sans',sans-serif;font-size:10px;color:rgba(242,237,228,0.5);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:4px">Availability</div>
+        <div id="panel-avail" style="font-family:'DM Sans',sans-serif;font-size:12px;color:var(--fbv-cream);line-height:1.55"></div>
+      </div>
+      <div class="detail-row" id="panel-url-row" style="display:none"><span class="detail-label">Listing</span><span class="detail-value"><a id="panel-url-link" href="#" target="_blank" rel="noopener" style="color:var(--fbv-teal-light);text-decoration:none">View →</a></span></div>
     </div>
-    <p class="panel-note" id="panel-description" hidden></p>
+    <p class="panel-note" id="panel-description"></p>
     <p class="panel-note" id="panel-note"></p>
-    <a class="panel-cta" id="panel-cta" href="mailto:info@fincabuenavida.com">Inquire About This Lot</a>
+    <p class="panel-note" id="panel-no-email-note" style="display:none;font-style:italic;opacity:0.7"></p>
+    <a class="panel-cta" id="panel-cta" href="#" style="display:none">Inquire About This Lot</a>
   </div>
 
   <!-- Rental detail panel -->
@@ -531,7 +551,7 @@
     <button id="rental-panel-close">✕</button>
     <div id="rental-panel-image"></div>
     <div class="rental-panel-body">
-      <span class="rental-panel-badge">For Rent</span>
+      <span class="rental-panel-badge" id="rental-panel-badge">For Rent</span>
       <h2 class="rental-panel-title" id="rental-panel-title"></h2>
       <p class="rental-panel-desc" id="rental-panel-desc"></p>
       <p class="rental-panel-note" id="rental-panel-note"></p>
@@ -549,7 +569,8 @@
 
     const STATUS_CONFIG = {
       'for_sale':      { color: '#2ECC8F', label: 'For Sale' },
-      'not_available': { color: '#8BAFC4', label: 'Not Available' }
+      'not_available': { color: '#8BAFC4', label: 'Not Available' },
+      'rental':        { color: '#E8A44A', label: 'Rental' }
     };
 
     // Edit these freely — one line per lot
@@ -747,8 +768,9 @@
       const isShore  = prop.type === 'Shore';
       const size     = isShore ? 36 : 30;
       const half     = size / 2;
-      const isAvail  = status === 'for_sale';
-      const delay    = (index * 0.3).toFixed(1);
+      const isAvail    = status === 'for_sale' || status === 'rental';
+      const pulseColor = status === 'rental' ? '#E8A44A' : '#2ECC8F';
+      const delay      = (index * 0.3).toFixed(1);
 
       let shape;
       if (isShore) {
@@ -758,7 +780,7 @@
       }
 
       const pulseRing = isAvail
-        ? `<circle class="pulse-ring" cx="${half}" cy="${half}" r="14" style="animation-delay:${delay}s;transform-origin:${half}px ${half}px"/>`
+        ? `<circle class="pulse-ring" cx="${half}" cy="${half}" r="14" fill="${pulseColor}" style="animation-delay:${delay}s;transform-origin:${half}px ${half}px"/>`
         : '';
 
       const svgSize = isAvail ? size + 20 : size;
@@ -798,12 +820,13 @@
         try {
           const { data, error } = await sb
             .from('lot_listings')
-            .select('lot_number, status');
+            .select('lot_number, status, acreage, description, price, email_contact, availability_notes, external_sale_url');
           if (!error && data) {
             data.forEach(row => {
               const name = lotIdToName(row.lot_number);
               if (name && Object.prototype.hasOwnProperty.call(LOT_STATUS, name)) {
                 LOT_STATUS[name] = row.status;
+                lotListingsCache[name] = row;
               }
             });
           }
@@ -876,6 +899,9 @@
     const panel      = document.getElementById('lot-detail-panel');
     const panelClose = document.getElementById('panel-close');
 
+    // Cache of full lot_listings rows keyed by lot name (e.g. "S6")
+    let lotListingsCache = {};
+
     // Fetch listings once and cache
     let listingsData = null;
     fetch('data/listings.json')
@@ -891,49 +917,89 @@
     }
 
     function openPanel(prop) {
-      const status  = LOT_STATUS[prop.name] || 'not_available';
-      const cfg     = STATUS_CONFIG[status];
-      const lotId   = lotNameToId(prop.name);
-      const listing = listingsData && listingsData.forSale
-        ? (listingsData.forSale.find(l => l.id === lotId) || null)
-        : null;
+      const status = LOT_STATUS[prop.name] || 'not_available';
+      const cfg    = STATUS_CONFIG[status];
+      const d      = lotListingsCache[prop.name] || {};
 
-      document.getElementById('panel-lot-name').textContent           = 'Lot ' + prop.name;
-      document.getElementById('panel-type-badge').textContent          = prop.type;
-      document.getElementById('panel-status-dot').style.background     = cfg.color;
-      document.getElementById('panel-status-label').textContent        = cfg.label;
-      document.getElementById('panel-detail-type').textContent         = prop.type === 'Shore' ? 'Shoreline Lot' : 'Inland Lot';
+      // Lot image
+      const lotImgEl = document.getElementById('lot-panel-image');
+      lotImgEl.style.display = 'block';
+      lotImgEl.innerHTML = `<img src="assets/images/${prop.name}.jpg" alt="Lot ${prop.name}" onerror="this.parentElement.style.display='none'">`;
 
-      // Price row — only show if listing has a price
+      document.getElementById('panel-lot-name').textContent       = 'Lot ' + prop.name;
+      document.getElementById('panel-type-badge').textContent      = prop.type;
+      document.getElementById('panel-status-dot').style.background = cfg.color;
+      document.getElementById('panel-status-label').textContent    = cfg.label;
+      document.getElementById('panel-detail-type').textContent     = prop.type === 'Shore' ? 'Shoreline Lot' : 'Inland Lot';
+
+      // Acreage — always show
+      document.getElementById('panel-acreage').textContent = d.acreage || '—';
+
+      // Description — always show
+      document.getElementById('panel-description').textContent = d.description || '';
+
+      // Asking Price — for_sale only, only if value present
       const priceRow = document.getElementById('panel-price-row');
-      const priceEl  = document.getElementById('panel-price');
-      if (listing && listing.price) {
-        priceEl.textContent = listing.price;
-        priceRow.hidden = false;
+      if (status === 'for_sale' && d.price) {
+        document.getElementById('panel-price').textContent = d.price;
+        priceRow.style.display = '';
       } else {
-        priceRow.hidden = true;
+        document.getElementById('panel-price').textContent = '';
+        priceRow.style.display = 'none';
       }
 
-      // Description
-      const descEl = document.getElementById('panel-description');
-      if (listing && listing.description) {
-        descEl.textContent = listing.description;
-        descEl.hidden = false;
+      // Availability Notes — rental only, only if value present
+      const availRow  = document.getElementById('panel-avail-row');
+      const availText = document.getElementById('panel-avail');
+      if (status === 'rental' && d.availability_notes) {
+        availText.textContent  = d.availability_notes;
+        availRow.style.display = '';
       } else {
-        descEl.hidden = true;
+        availText.textContent  = '';
+        availRow.style.display = 'none';
       }
 
-      // Contextual note and CTA
-      const noteEl = document.getElementById('panel-note');
-      const ctaEl  = document.getElementById('panel-cta');
+      // External URL — only if value present
+      const urlRow = document.getElementById('panel-url-row');
+      if (d.external_sale_url) {
+        document.getElementById('panel-url-link').href = d.external_sale_url;
+        urlRow.style.display = '';
+      } else {
+        urlRow.style.display = 'none';
+      }
+
+      // Note, CTA, and no-email fallback — always reset first
+      const noteEl      = document.getElementById('panel-note');
+      const ctaEl       = document.getElementById('panel-cta');
+      const noEmailNote = document.getElementById('panel-no-email-note');
+
+      noteEl.textContent      = '';
+      ctaEl.style.display     = 'none';
+      noEmailNote.style.display = 'none';
+      noEmailNote.textContent = '';
+
       if (status === 'for_sale') {
-        noteEl.textContent = 'This lot is currently listed for sale. Contact us for dimensions, site details, and a private showing.';
-        ctaEl.textContent  = 'Inquire About This Lot';
-        ctaEl.href         = 'mailto:info@fincabuenavida.com?subject=Lot%20' + prop.name + '%20Inquiry';
-        ctaEl.hidden       = false;
+        if (d.email_contact) {
+          ctaEl.textContent   = 'Inquire About This Lot';
+          ctaEl.href          = 'mailto:' + d.email_contact + '?subject=' + encodeURIComponent('Lot ' + prop.name + ' Inquiry');
+          ctaEl.style.display = '';
+        }
+      } else if (status === 'rental') {
+        if (d.email_contact) {
+          ctaEl.textContent   = 'Contact About This Rental';
+          ctaEl.href          = 'mailto:' + d.email_contact + '?subject=' + encodeURIComponent('Lot ' + prop.name + ' Rental Inquiry');
+          ctaEl.style.display = '';
+        }
       } else {
-        noteEl.textContent = 'This lot is not currently listed. Contact us to learn about future availability.';
-        ctaEl.hidden       = true;
+        noteEl.textContent = 'This lot is not currently listed for sale or rent by its owner.';
+        if (d.email_contact) {
+          ctaEl.textContent   = 'Contact to learn about this property.';
+          ctaEl.href          = 'mailto:' + d.email_contact + '?subject=' + encodeURIComponent('Lot ' + prop.name + ' Inquiry');
+          ctaEl.style.display = '';
+        } else {
+          noEmailNote.textContent   = 'The owner has not provided a contact email in relation to this property.';
+          noEmailNote.style.display = '';
+        }
       }
 
       panel.classList.add('panel-open');
@@ -958,6 +1024,7 @@
         ? listingsData.forRent.find(r => r.title === name)
         : null;
 
+      document.getElementById('rental-panel-badge').textContent = (listing && listing.badge) ? listing.badge : 'For Rent';
       document.getElementById('rental-panel-title').textContent = name;
       document.getElementById('rental-panel-desc').textContent =
         (listing && listing.shortDescription) ? listing.shortDescription : '';

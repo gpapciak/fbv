@@ -86,7 +86,7 @@
               <path d="M2 5a2 2 0 012-2h7a2 2 0 012 2v4a2 2 0 01-2 2H9l-3 3v-3H4a2 2 0 01-2-2V5z"/>
               <path d="M15 7v2a4 4 0 01-4 4H9.828l-1.766 1.767c.28.149.599.233.938.233h2l3 3v-3h2a2 2 0 002-2V9a2 2 0 00-2-2h-1z"/>
             </svg>
-            Board
+            Announcements
           </button>
         </li>
         <li>
@@ -94,7 +94,7 @@
             <svg class="nav-icon" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
               <path fill-rule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd"/>
             </svg>
-            My Listing
+            My Lot(s)
           </button>
         </li>
       </ul>
@@ -141,7 +141,7 @@
     <!-- Documents tab -->
     <div id="tab-documents" class="tab-content" role="tabpanel" aria-labelledby="nav-documents"></div>
 
-    <!-- Board tab -->
+    <!-- Announcements tab -->
     <div id="tab-board" class="tab-content" role="tabpanel" aria-labelledby="nav-board"></div>
 
     <!-- My Listing tab -->
@@ -242,8 +242,11 @@
         </div>
         <div class="form-field" id="upload-file-field">
           <label for="upload-file">File</label>
-          <input type="file" id="upload-file" accept=".pdf,.doc,.docx,.xls,.xlsx,.txt,.png,.jpg" />
+          <input type="file" id="upload-file" accept=".pdf,.doc,.docx,.xls,.xlsx,.txt,.jpg,.jpeg,.png" />
         </div>
+        <p style="font-size:0.78rem;color:var(--text-light);font-style:italic;margin:0.5rem 0 0.75rem">
+          Documents uploaded here are visible to all verified FBV portal members.
+        </p>
         <div id="upload-error" class="login-error" role="alert" aria-live="polite" hidden></div>
         <button type="submit" class="btn-primary" id="upload-submit">Upload Document</button>
       </form>
@@ -257,6 +260,7 @@
   <div class="modal-box">
     <div class="modal-header">
       <h2 class="modal-title" id="post-modal-title">New Announcement</h2>
+      <input type="hidden" id="post-edit-id" value="" />
       <button class="modal-close" aria-label="Close">&times;</button>
     </div>
     <div class="modal-body">

@@ -972,6 +972,7 @@ button { cursor: pointer; font-family: inherit; }
 }
 .listing-badge.for-sale  { background: var(--coral); color: white; }
 .listing-badge.for-rent  { background: var(--teal-bay); color: white; }
+.listing-badge.rental    { background: var(--amber); color: white; }
 .listing-badge.available { background: var(--teal-bright); color: var(--green-deep); }
 
 .listing-type-badge {
@@ -1031,10 +1032,6 @@ button { cursor: pointer; font-family: inherit; }
   color: var(--text-mid);
   line-height: 1.7;
   margin-bottom: 1.25rem;
-  display: -webkit-box;
-  -webkit-line-clamp: 3;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
 }
 
 .listing-features {

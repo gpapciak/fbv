@@ -1096,7 +1096,7 @@
 /* Directory grid */
 .directory-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
   gap: 1rem;
 }
 
@@ -1164,6 +1164,26 @@
 
 .dir-email:hover {
   text-decoration: underline;
+}
+
+.dir-pics-link {
+  font-family: var(--font-sans);
+  font-size: 0.8rem;
+  color: var(--teal-bay);
+  text-decoration: none;
+}
+.dir-pics-link:hover { text-decoration: underline; }
+
+.dir-meta {
+  font-family: var(--font-sans);
+  font-size: 0.8rem;
+  color: var(--text-mid);
+  line-height: 1.5;
+}
+
+.dir-meta-label {
+  font-weight: 600;
+  color: var(--text-dark);
 }
 
 /* ===================================================

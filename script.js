@@ -113,6 +113,8 @@ function escHtml(str) {
 let lotsData = null;
 let listingsData = null;
 let supabaseListings = null;
+let supabaseForSale  = null;
+let supabaseRentals  = null;
 
 async function loadData() {
   // Always load lots.json for static lot info (name, type, acreage)
@@ -126,14 +128,18 @@ async function loadData() {
     try {
       const { data, error } = await sb
         .from('lot_listings')
-        .select('lot_number, status, description, price, existing_structures, external_sale_url')
-        .eq('status', 'for_sale')
+        .select('lot_number, status, description, price, acreage, email_contact, availability_notes, external_sale_url')
+        .in('status', ['for_sale', 'rental'])
         .order('lot_number');
       if (error) throw error;
       supabaseListings = data || [];
+      supabaseForSale  = supabaseListings.filter(function (r) { return r.status === 'for_sale'; });
+      supabaseRentals  = supabaseListings.filter(function (r) { return r.status === 'rental'; });
     } catch (err) {
       console.warn('Supabase fetch failed, falling back to JSON:', err.message || err);
       supabaseListings = null;
+      supabaseForSale  = null;
+      supabaseRentals  = null;
     }
   }
 
@@ -193,17 +199,17 @@ function renderForSale() {
   const grid = document.getElementById('for-sale-grid');
   if (!grid) return;
 
-  // Use live Supabase rows when available; fall back to static JSON
   let items;
-  if (supabaseListings !== null) {
-    items = supabaseListings;
+  if (supabaseForSale !== null) {
+    items = supabaseForSale;
   } else if (listingsData && listingsData.forSale) {
     items = listingsData.forSale.map(l => ({
       lot_number: l.lotNumber,
       status: 'for_sale',
       price: l.price,
       description: l.description,
-      existing_structures: null,
+      acreage: null,
+      email_contact: null,
       external_sale_url: null,
     }));
   } else {
@@ -216,43 +222,38 @@ function renderForSale() {
   }
 
   grid.innerHTML = items.map(row => {
-    const lotName  = lotLabel(row.lot_number);
-    const lotInfo  = lotsData && lotsData.lots
+    const lotName   = lotLabel(row.lot_number);
+    const lotInfo   = lotsData && lotsData.lots
       ? (lotsData.lots.find(l => l.id === row.lot_number) || null)
       : null;
-    const lotType  = lotInfo ? lotInfo.type : (row.lot_number < 200 ? 'shore' : 'inland');
-    const acreage  = lotInfo && lotInfo.acreage ? lotInfo.acreage : null;
+    const lotType   = lotInfo ? lotInfo.type : (row.lot_number < 200 ? 'shore' : 'inland');
+    const acreage   = row.acreage || (lotInfo && lotInfo.acreage ? lotInfo.acreage : null);
     const typeLabel = lotType === 'shore' ? 'Shore Lot' : 'Inland Lot';
     const imgType   = lotType === 'shore' ? 'oceanfront' : 'jungle';
 
-    const acreageLine = acreage
-      ? `<span><svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor"><path d="M8 1C4.7 1 2 3.7 2 7c0 4.5 6 8 6 8s6-3.5 6-8c0-3.3-2.7-6-6-6zm0 8a2 2 0 1 1 0-4 2 2 0 0 1 0 4z"/></svg> ${escHtml(acreage)} acres</span>`
-      : '';
+    const acreageLine = `<span><svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor"><path d="M8 1C4.7 1 2 3.7 2 7c0 4.5 6 8 6 8s6-3.5 6-8c0-3.3-2.7-6-6-6zm0 8a2 2 0 1 1 0-4 2 2 0 0 1 0 4z"/></svg> ${acreage ? escHtml(acreage) + ' acres' : '—'}</span>`;
 
-    const descLine = row.description
-      ? `<p class="listing-description">${escHtml(row.description)}</p>`
-      : '';
-
-    const structuresLine = row.existing_structures
-      ? `<p class="listing-description" style="margin-top:0.4rem"><strong>Structures:</strong> ${escHtml(row.existing_structures)}</p>`
-      : '';
+    const descLine = `<p class="listing-description">${row.description ? escHtml(row.description) : '<em style="opacity:0.5">No description provided.</em>'}</p>`;
 
     const priceLine = row.price
-      ? `<span class="listing-price">${escHtml(row.price)}</span>`
-      : `<span class="listing-price" style="opacity:0.55;font-style:italic">Price on request</span>`;
+      ? `<p class="listing-description" style="margin-top:0.25rem"><strong>Asking:</strong> ${escHtml(row.price)}</p>`
+      : '';
 
     const ctaBtn = row.external_sale_url
       ? `<a href="${escHtml(row.external_sale_url)}" class="listing-contact" target="_blank" rel="noopener">View Listing</a>`
-      : `<button class="listing-contact" onclick="openContactModal(null, 'Lot ${escHtml(lotName)}')">Inquire</button>`;
+      : row.email_contact
+      ? `<a href="mailto:${escHtml(row.email_contact)}?subject=${encodeURIComponent('Inquiry: Lot ' + lotName)}" class="listing-contact">Inquire</a>`
+      : '';
 
     return `
       <div class="listing-card fade-in" id="lot-${escHtml(lotName)}">
         <div class="listing-image">
+          <img src="assets/images/${escHtml(lotName)}.jpg" alt="Lot ${escHtml(lotName)}" style="width:100%;height:100%;object-fit:cover;position:absolute;top:0;left:0;z-index:1" onerror="this.remove()">
           <div class="listing-image-placeholder">
             ${getListingImageSVG(imgType, 'for_sale')}
           </div>
-          <span class="listing-badge for-sale">For Sale</span>
-          <span class="listing-type-badge">${typeLabel}</span>
+          <span class="listing-badge for-sale" style="z-index:2">For Sale</span>
+          <span class="listing-type-badge" style="z-index:2">${typeLabel}</span>
         </div>
         <div class="listing-body">
           <div class="listing-lot">Lot ${escHtml(lotName)}</div>
@@ -262,9 +263,8 @@ function renderForSale() {
             <span>${typeLabel}</span>
           </div>
           ${descLine}
-          ${structuresLine}
-          <div class="listing-footer">
-            ${priceLine}
+          ${priceLine}
+          <div class="listing-footer" style="justify-content:flex-end">
             ${ctaBtn}
           </div>
         </div>
@@ -275,6 +275,57 @@ function renderForSale() {
   grid.querySelectorAll('.fade-in').forEach(el => fadeObserver.observe(el));
 }
 
+function renderLotRentalCard(row) {
+  const lotName   = lotLabel(row.lot_number);
+  const lotInfo   = lotsData && lotsData.lots
+    ? (lotsData.lots.find(l => l.id === row.lot_number) || null)
+    : null;
+  const lotType   = lotInfo ? lotInfo.type : (row.lot_number < 200 ? 'shore' : 'inland');
+  const acreage   = row.acreage || (lotInfo && lotInfo.acreage ? lotInfo.acreage : null);
+  const typeLabel = lotType === 'shore' ? 'Shore Lot' : 'Inland Lot';
+  const imgType   = lotType === 'shore' ? 'oceanfront' : 'jungle';
+
+  const acreageLine = `<span><svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor"><path d="M8 1C4.7 1 2 3.7 2 7c0 4.5 6 8 6 8s6-3.5 6-8c0-3.3-2.7-6-6-6zm0 8a2 2 0 1 1 0-4 2 2 0 0 1 0 4z"/></svg> ${acreage ? escHtml(acreage) + ' acres' : '—'}</span>`;
+
+  const descLine = `<p class="listing-description">${row.description ? escHtml(row.description) : '<em style="opacity:0.5">No description provided.</em>'}</p>`;
+
+  const availLine = row.availability_notes
+    ? `<p class="listing-description" style="margin-top:0.25rem"><strong>Availability:</strong> ${escHtml(row.availability_notes)}</p>`
+    : '';
+
+  const ctaBtn = row.external_sale_url
+    ? `<a href="${escHtml(row.external_sale_url)}" class="listing-contact" target="_blank" rel="noopener">View Listing</a>`
+    : row.email_contact
+    ? `<a href="mailto:${escHtml(row.email_contact)}?subject=${encodeURIComponent('Rental Inquiry: Lot ' + lotName)}" class="listing-contact">Inquire</a>`
+    : '';
+
+  return `
+    <div class="listing-card fade-in" id="lot-rental-${escHtml(lotName)}">
+      <div class="listing-image">
+        <img src="assets/images/${escHtml(lotName)}.jpg" alt="Lot ${escHtml(lotName)}" style="width:100%;height:100%;object-fit:cover;position:absolute;top:0;left:0;z-index:1" onerror="this.remove()">
+        <div class="listing-image-placeholder">
+          ${getListingImageSVG(imgType, 'rental')}
+        </div>
+        <span class="listing-badge rental" style="z-index:2">Rental</span>
+        <span class="listing-type-badge" style="z-index:2">${typeLabel}</span>
+      </div>
+      <div class="listing-body">
+        <div class="listing-lot">Lot ${escHtml(lotName)}</div>
+        <h3 class="listing-title">${typeLabel} ${escHtml(lotName)}</h3>
+        <div class="listing-meta">
+          ${acreageLine}
+          <span>${typeLabel}</span>
+        </div>
+        ${descLine}
+        ${availLine}
+        <div class="listing-footer" style="justify-content:flex-end">
+          ${ctaBtn}
+        </div>
+      </div>
+    </div>
+  `;
+}
+
 function renderForRent() {
   const grid = document.getElementById('for-rent-grid');
   if (!grid || !listingsData.forRent) return;
@@ -283,17 +334,21 @@ function renderForRent() {
 
   const airbnbIcon = `<svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm0 4.5c1.243 0 2.25 1.007 2.25 2.25S13.243 9 12 9 9.75 7.993 9.75 6.75 10.757 4.5 12 4.5zm5.25 13.5H6.75c-.414 0-.75-.336-.75-.75 0-3.176 2.268-5.813 5.25-6.408V9.75h1.5v1.092c2.982.595 5.25 3.232 5.25 6.408 0 .414-.336.75-.75.75z"/></svg>`;
 
-  grid.innerHTML = listingsData.forRent.map(listing => {
+  const lotRentalHtml = (supabaseRentals && supabaseRentals.length)
+    ? supabaseRentals.map(renderLotRentalCard).join('')
+    : '';
+
+  grid.innerHTML = lotRentalHtml + listingsData.forRent.map(listing => {
     let imageBlock;
     if (listing.image) {
       imageBlock = `<div class="listing-image">
            <img src="${escHtml(listing.image)}" alt="${escHtml(listing.title)}" style="width:100%;height:100%;object-fit:cover;">
-           <span class="listing-badge for-rent">For Rent</span>
+           <span class="listing-badge for-rent">${escHtml(listing.badge || 'For Rent')}</span>
          </div>`;
     } else if (listing.airbnbId) {
       imageBlock = `<div class="listing-image listing-image--airbnb">
            <div class="airbnb-embed-frame" data-id="${escHtml(listing.airbnbId)}" data-view="home" data-hide-price="true" style="width:100%;height:300px;"></div>
-           <span class="listing-badge for-rent">For Rent</span>
+           <span class="listing-badge for-rent">${escHtml(listing.badge || 'For Rent')}</span>
          </div>`;
       hasAirbnb = true;
     } else {
@@ -301,7 +356,7 @@ function renderForRent() {
            <div class="listing-image-placeholder">
              ${getListingImageSVG(listing.type, 'for-rent')}
            </div>
-           <span class="listing-badge for-rent">${listing.externalOnly ? 'External' : 'For Rent'}</span>
+           <span class="listing-badge for-rent">${escHtml(listing.badge || (listing.externalOnly ? 'External' : 'For Rent'))}</span>
            ${listing.type !== 'resort' ? `<span class="listing-type-badge">${listing.type.replace('-', ' ')}</span>` : ''}
          </div>`;
     }

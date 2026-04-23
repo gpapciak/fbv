@@ -174,11 +174,7 @@ function setSidebarMember(owner) {
       : 'No lots assigned';
   }
   if (avatarEl) {
-    if (owner.photo_url) {
-      avatarEl.innerHTML = '<img src="' + escHtml(owner.photo_url) + '" alt="' + escHtml(owner.name || '') + '" />';
-    } else {
-      avatarEl.textContent = initials(owner.name || owner.email || '?');
-    }
+    avatarEl.textContent = initials(owner.name || owner.email || '?');
   }
 }
 
@@ -261,7 +257,7 @@ async function loadDashboard() {
 
   const currentYear = new Date().getFullYear();
   const lots = currentOwner.lot_numbers || [];
-  const memberSince = new Date(currentOwner.created_at).getFullYear();
+  const memberSince = currentOwner.member_since || new Date(currentOwner.created_at).getFullYear();
 
   let duesStatusBadge = '';
   let duesAccent = 'accent-amber';
@@ -321,7 +317,7 @@ async function loadDashboard() {
     + '</div>'
 
     + '<div class="stat-card accent-green">'
-    + '<span class="stat-label">Member Since</span>'
+    + '<span class="stat-label">Year Purchased</span>'
     + '<div class="stat-value">' + memberSince + '</div>'
     + '<div class="stat-sub">Community Member</div>'
     + '</div>'
@@ -655,7 +651,7 @@ async function loadDirectory() {
   } else {
     const { data, error } = await sb
       .from('owners')
-      .select('id, name, email, lot_numbers, bio, photo_url, directory_opt_in')
+      .select('id, name, email, lot_numbers, bio, directory_opt_in, origin, property_goals, months_ideal, months_actual, fbv_pics_url, member_since')
       .eq('directory_opt_in', true)
       .order('name');
 
@@ -672,11 +668,7 @@ async function loadDirectory() {
 
   const memberCards = members.map(function (m) {
     return '<div class="directory-card">'
-      + '<div class="dir-avatar">'
-      + (m.photo_url
-          ? '<img src="' + escHtml(m.photo_url) + '" alt="' + escHtml(m.name) + '" />'
-          : escHtml(initials(m.name)))
-      + '</div>'
+      + '<div class="dir-avatar">' + escHtml(initials(m.name)) + '</div>'
       + '<div class="dir-name">' + escHtml(m.name) + '</div>'
       + '<div class="dir-lot">'
       + ((m.lot_numbers || []).length > 0
@@ -684,6 +676,15 @@ async function loadDirectory() {
           : 'Property Owner')
       + '</div>'
       + (m.bio ? '<div class="dir-bio">' + escHtml(m.bio) + '</div>' : '')
+      + (m.member_since ? '<div class="dir-meta"><span class="dir-meta-label">Year Purchased</span> ' + escHtml(String(m.member_since)) + '</div>' : '')
+      + (m.origin ? '<div class="dir-meta"><span class="dir-meta-label">Originally from</span> ' + escHtml(m.origin) + '</div>' : '')
+      + (m.property_goals ? '<div class="dir-meta"><span class="dir-meta-label">Goals for FBV Property</span> ' + escHtml(m.property_goals) + '</div>' : '')
+      + ((m.months_ideal != null || m.months_actual != null) ? '<div class="dir-meta"><span class="dir-meta-label">Months/year @ FBV</span> '
+          + (m.months_ideal != null ? m.months_ideal + ' ideal' : '')
+          + (m.months_ideal != null && m.months_actual != null ? ' · ' : '')
+          + (m.months_actual != null ? m.months_actual + ' actual' : '')
+          + '</div>' : '')
+      + (m.fbv_pics_url ? '<a href="' + escHtml(m.fbv_pics_url) + '" class="dir-pics-link" target="_blank" rel="noopener">📷 My FBV Pics</a>' : '')
       + '<a href="mailto:' + escHtml(m.email) + '" class="dir-email">' + escHtml(m.email) + '</a>'
       + '</div>';
   }).join('');
@@ -732,9 +733,23 @@ function renderProfileEditForm() {
     + '<input type="text" id="profile-phone" value="' + escHtml(o.phone || '') + '" /></div>'
     + '</div>'
     + '<div class="form-field"><label for="profile-bio">Bio</label>'
-    + '<textarea id="profile-bio" rows="2" placeholder="A little about yourself…">' + escHtml(o.bio || '') + '</textarea></div>'
-    + '<div class="form-field"><label for="profile-photo">Photo URL</label>'
-    + '<input type="text" id="profile-photo" value="' + escHtml(o.photo_url || '') + '" placeholder="https://…" /></div>'
+    + '<textarea id="profile-bio" rows="2" maxlength="500" placeholder="A little about yourself…">' + escHtml(o.bio || '') + '</textarea>'
+    + '<span style="font-size:0.75rem;color:var(--text-light)">Max 500 characters</span></div>'
+    + '<div class="form-field"><label for="profile-pics">My FBV Pics</label>'
+    + '<input type="text" id="profile-pics" value="' + escHtml(o.fbv_pics_url || '') + '" placeholder="https://photos.app.goo.gl/…" />'
+    + '<span style="font-size:0.75rem;color:var(--text-light);font-style:italic">Link to a shared Google Photos album, Dropbox folder, or any public photo gallery.</span></div>'
+    + '<div class="form-field"><label for="profile-member-since">Year Purchased</label>'
+    + '<input type="number" id="profile-member-since" value="' + (o.member_since || '') + '" min="1990" max="2099" placeholder="e.g. 2009" /></div>'
+    + '<div class="form-field"><label for="profile-origin">Where are you originally from?</label>'
+    + '<input type="text" id="profile-origin" value="' + escHtml(o.origin || '') + '" placeholder="e.g. Portland, Oregon" /></div>'
+    + '<div class="form-field"><label for="profile-goals">Goals for your FBV property?</label>'
+    + '<textarea id="profile-goals" rows="2" placeholder="e.g. Build a family retreat, eventually retire here…">' + escHtml(o.property_goals || '') + '</textarea></div>'
+    + '<div class="form-row">'
+    + '<div class="form-field"><label for="profile-months-ideal">Months per year @ FBV — ideal</label>'
+    + '<input type="number" id="profile-months-ideal" value="' + (o.months_ideal != null ? o.months_ideal : '') + '" min="0" max="12" placeholder="0–12" /></div>'
+    + '<div class="form-field"><label for="profile-months-actual">Months per year @ FBV — actual</label>'
+    + '<input type="number" id="profile-months-actual" value="' + (o.months_actual != null ? o.months_actual : '') + '" min="0" max="12" placeholder="0–12" /></div>'
+    + '</div>'
     + '<button type="submit" class="btn-primary btn-sm">Save Profile</button>'
     + '</form>'
     + '</div>';
@@ -764,10 +779,15 @@ async function toggleDirectoryOptIn(value) {
 async function saveProfile(e) {
   e.preventDefault();
 
-  const name = document.getElementById('profile-name').value.trim();
-  const phone = document.getElementById('profile-phone').value.trim();
-  const bio = document.getElementById('profile-bio').value.trim();
-  const photo_url = document.getElementById('profile-photo').value.trim();
+  const name           = document.getElementById('profile-name').value.trim();
+  const phone          = document.getElementById('profile-phone').value.trim();
+  const bio            = document.getElementById('profile-bio').value.trim();
+  const fbv_pics_url   = document.getElementById('profile-pics').value.trim();
+  const member_since   = document.getElementById('profile-member-since').value !== '' ? parseInt(document.getElementById('profile-member-since').value, 10) : null;
+  const origin         = document.getElementById('profile-origin').value.trim();
+  const property_goals = document.getElementById('profile-goals').value.trim();
+  const months_ideal   = document.getElementById('profile-months-ideal').value !== '' ? parseInt(document.getElementById('profile-months-ideal').value, 10) : null;
+  const months_actual  = document.getElementById('profile-months-actual').value !== '' ? parseInt(document.getElementById('profile-months-actual').value, 10) : null;
   const btn = e.target.querySelector('[type="submit"]');
 
   btn.disabled = true;
@@ -777,7 +797,7 @@ async function saveProfile(e) {
     currentOwner.name = name;
     currentOwner.phone = phone;
     currentOwner.bio = bio;
-    currentOwner.photo_url = photo_url;
+    currentOwner.fbv_pics_url = fbv_pics_url;
     setSidebarMember(currentOwner);
     showToast('Profile updated.', 'success');
     btn.disabled = false;
@@ -786,7 +806,7 @@ async function saveProfile(e) {
     return;
   }
 
-  const { error } = await sb.from('owners').update({ name, phone, bio, photo_url }).eq('id', currentOwner.id);
+  const { error } = await sb.from('owners').update({ name, phone, bio, fbv_pics_url, member_since, origin, property_goals, months_ideal, months_actual }).eq('id', currentOwner.id);
 
   if (error) {
     showToast('Error: ' + error.message, 'error');
@@ -798,7 +818,12 @@ async function saveProfile(e) {
   currentOwner.name = name;
   currentOwner.phone = phone;
   currentOwner.bio = bio;
-  currentOwner.photo_url = photo_url;
+  currentOwner.fbv_pics_url = fbv_pics_url;
+  currentOwner.member_since = member_since;
+  currentOwner.origin = origin;
+  currentOwner.property_goals = property_goals;
+  currentOwner.months_ideal = months_ideal;
+  currentOwner.months_actual = months_actual;
   setSidebarMember(currentOwner);
   showToast('Profile updated.', 'success');
   btn.disabled = false;
@@ -848,9 +873,7 @@ async function loadDocuments() {
     if (grouped[doc.category]) grouped[doc.category].push(doc);
   });
 
-  const uploadBtn = currentOwner.is_admin
-    ? '<button class="btn-primary admin-only" onclick="openUploadModal()">+ Upload Document</button>'
-    : '';
+  const uploadBtn = '<button class="btn-primary" onclick="openUploadModal()">+ Upload Document</button>';
 
   let sectionsHtml = '';
   categories.forEach(function (cat) {
@@ -858,8 +881,9 @@ async function loadDocuments() {
     if (catDocs.length === 0) return;
 
     const docRowsHtml = catDocs.map(function (doc) {
-      const deleteBtn = currentOwner.is_admin
-        ? '<button class="btn-ghost btn-sm danger admin-only" onclick="deleteDocument(\'' + doc.id + '\',\'' + escHtml(doc.storage_path || '') + '\')">Delete</button>'
+      const canDelete = currentOwner.is_admin || doc.uploaded_by === currentOwner.id;
+      const deleteBtn = canDelete
+        ? '<button class="btn-ghost btn-sm danger" onclick="deleteDocument(\'' + doc.id + '\',\'' + escHtml(doc.storage_path || '') + '\')">Delete</button>'
         : '';
 
       const downloadBtn = doc.reference_only
@@ -900,6 +924,9 @@ async function loadDocuments() {
     + '<h1 class="page-title">Documents</h1>'
     + '<div class="section-actions">' + uploadBtn + '</div>'
     + '</div>'
+    + '<p style="font-size:0.78rem;color:var(--text-light);font-style:italic;margin:-0.5rem 0 1.5rem">'
+    + 'All documents are visible to every verified portal member. Please keep uploads under 5 MB to help manage hosting costs.'
+    + '</p>'
     + sectionsHtml;
 
   if (currentOwner.is_admin) showAdminElements();
@@ -966,6 +993,15 @@ async function submitUpload(e) {
     const file = fileInput.files[0];
     if (!file) {
       errEl.textContent = 'Please select a file to upload.';
+      errEl.hidden = false;
+      btn.disabled = false;
+      btn.textContent = 'Upload Document';
+      return;
+    }
+
+    const MAX_BYTES = 5 * 1024 * 1024; // 5 MB
+    if (file.size > MAX_BYTES) {
+      errEl.textContent = 'File too large — maximum size is 5 MB.';
       errEl.hidden = false;
       btn.disabled = false;
       btn.textContent = 'Upload Document';
@@ -1070,6 +1106,10 @@ async function loadBoard() {
     ? '<button class="btn-primary admin-only" onclick="openPostModal()">+ New Post</button>'
     : '';
 
+  // Store posts by id so openEditPostModal can look them up safely
+  window._boardPosts = {};
+  posts.forEach(function (p) { window._boardPosts[p.id] = p; });
+
   const postsHtml = posts.map(function (post) {
     const authorName = post.owners ? escHtml(post.owners.name) : 'Board';
     const authorPhoto = post.owners && post.owners.photo_url;
@@ -1085,6 +1125,7 @@ async function loadBoard() {
       ? '<div class="post-actions-top admin-only">'
         + '<button class="btn-ghost btn-sm" onclick="togglePin(\'' + post.id + '\',' + (post.pinned ? 'false' : 'true') + ')">'
         + (post.pinned ? 'Unpin' : 'Pin') + '</button>'
+        + '<button class="btn-ghost btn-sm" onclick="openEditPostModal(\'' + post.id + '\')">Edit</button>'
         + '<button class="btn-ghost btn-sm danger" onclick="deletePost(\'' + post.id + '\')">Delete</button>'
         + '</div>'
       : '';
@@ -1135,7 +1176,8 @@ async function loadBoard() {
   }).join('');
 
   panel.innerHTML = '<div class="page-header">'
-    + '<h1 class="page-title">Board</h1>'
+    + '<h1 class="page-title">Announcements</h1>'
+    + '<p style="font-size:0.78rem;color:var(--text-light);font-style:italic;margin:-0.5rem 0 1.5rem">Posting is currently limited to admins while we get the portal established.</p>'
     + '<div class="section-actions">' + newPostBtn + '</div>'
     + '</div>'
     + (posts.length > 0 ? postsHtml : '<p class="empty-state"><span class="empty-icon">💬</span>No announcements yet. Check back soon.</p>');
@@ -1183,49 +1225,67 @@ async function postComment(e, announcementId) {
 
 function openPostModal() {
   document.getElementById('post-form').reset();
+  document.getElementById('post-edit-id').value = '';
+  document.getElementById('post-modal-title').textContent = 'New Announcement';
+  document.getElementById('post-submit').textContent = 'Post Announcement';
   document.getElementById('post-error').hidden = true;
   document.getElementById('post-submit').disabled = false;
-  document.getElementById('post-submit').textContent = 'Post Announcement';
+  openModal('post-modal');
+}
+
+function openEditPostModal(id) {
+  const post = window._boardPosts && window._boardPosts[id];
+  if (!post) return;
+  document.getElementById('post-edit-id').value = id;
+  document.getElementById('post-modal-title').textContent = 'Edit Announcement';
+  document.getElementById('post-title').value = post.title;
+  document.getElementById('post-body').value = post.body;
+  document.getElementById('post-pinned').checked = post.pinned;
+  document.getElementById('post-error').hidden = true;
+  document.getElementById('post-submit').disabled = false;
+  document.getElementById('post-submit').textContent = 'Save Changes';
   openModal('post-modal');
 }
 
 async function submitPost(e) {
   e.preventDefault();
-  const title = document.getElementById('post-title').value.trim();
-  const body = document.getElementById('post-body').value.trim();
-  const pinned = document.getElementById('post-pinned').checked;
-  const errEl = document.getElementById('post-error');
-  const btn = document.getElementById('post-submit');
+  const title   = document.getElementById('post-title').value.trim();
+  const body    = document.getElementById('post-body').value.trim();
+  const pinned  = document.getElementById('post-pinned').checked;
+  const editId  = document.getElementById('post-edit-id').value;
+  const errEl   = document.getElementById('post-error');
+  const btn     = document.getElementById('post-submit');
+  const isEdit  = !!editId;
 
   errEl.hidden = true;
   btn.disabled = true;
-  btn.textContent = 'Posting…';
+  btn.textContent = isEdit ? 'Saving…' : 'Posting…';
 
   if (DEMO_MODE) {
-    showToast('Demo mode: posting requires Supabase.', 'info');
+    showToast('Demo mode: requires Supabase.', 'info');
     closeAllModals();
     btn.disabled = false;
-    btn.textContent = 'Post Announcement';
+    btn.textContent = isEdit ? 'Save Changes' : 'Post Announcement';
     return;
   }
 
-  const { error } = await sb.from('announcements').insert({
-    title,
-    body,
-    pinned,
-    author_id: currentOwner.id,
-  });
+  let error;
+  if (isEdit) {
+    ({ error } = await sb.from('announcements').update({ title, body, pinned }).eq('id', editId));
+  } else {
+    ({ error } = await sb.from('announcements').insert({ title, body, pinned, author_id: currentOwner.id }));
+  }
 
   if (error) {
     errEl.textContent = error.message;
     errEl.hidden = false;
     btn.disabled = false;
-    btn.textContent = 'Post Announcement';
+    btn.textContent = isEdit ? 'Save Changes' : 'Post Announcement';
     return;
   }
 
   closeAllModals();
-  showToast('Announcement posted.', 'success');
+  showToast(isEdit ? 'Announcement updated.' : 'Announcement posted.', 'success');
   loadBoard();
 }
 
@@ -1263,7 +1323,7 @@ async function loadMyListing() {
   const lots = currentOwner.lot_numbers || [];
 
   if (lots.length === 0) {
-    panel.innerHTML = '<div class="page-header"><h1 class="page-title">My Listing</h1></div>'
+    panel.innerHTML = '<div class="page-header"><h1 class="page-title">My Lot(s)</h1></div>'
       + '<p class="empty-state"><span class="empty-icon">🏡</span>No lots are assigned to your account. Contact the board to update your profile.</p>';
     return;
   }
@@ -1284,54 +1344,123 @@ async function loadMyListing() {
     (data || []).forEach(function (l) { existingListings[l.lot_number] = l; });
   }
 
+  const statusLabels = { 'not_available': 'Not Available', 'for_sale': 'For Sale', 'rental': 'Rental' };
+  const reqStar = '<span style="color:var(--accent-coral,#d9644a);font-size:0.8em;margin-left:3px">*</span>';
+
   const sectionsHtml = lots.map(function (lotNum) {
     const listing = existingListings[lotNum] || {};
-    const lotInfo = lotsData && lotsData.lots
-      ? (lotsData.lots.find(function (l) { return l.id === lotNum; }) || null)
-      : null;
-    const acreage = lotInfo && lotInfo.acreage ? lotInfo.acreage : '—';
+    const s = listing.status || 'not_available';
+    const isForSale = s === 'for_sale';
+    const isRental  = s === 'rental';
+    const isActive  = isForSale || isRental;
+
     return '<div class="listing-section">'
       + '<div class="listing-lot-title">Lot ' + lotLabel(lotNum) + '</div>'
       + '<form id="listing-form-' + lotNum + '" onsubmit="saveListing(event,' + lotNum + ')" novalidate>'
       + '<div class="listing-form-grid">'
+
+      // Status
       + '<div class="form-field"><label for="listing-status-' + lotNum + '">Status</label>'
-      + '<select id="listing-status-' + lotNum + '">'
-      + ['for_sale', 'not_available'].map(function (s) {
-          return '<option value="' + s + '"' + (listing.status === s ? ' selected' : '') + '>'
-            + { 'for_sale': 'For Sale', 'not_available': 'Not Available' }[s]
-            + '</option>';
+      + '<select id="listing-status-' + lotNum + '" onchange="updateListingFormFields(' + lotNum + ')">'
+      + ['not_available', 'for_sale', 'rental'].map(function (v) {
+          return '<option value="' + v + '"' + (s === v ? ' selected' : '') + '>' + statusLabels[v] + '</option>';
         }).join('')
       + '</select></div>'
-      + '<div class="form-field"><label>Acreage</label>'
-      + '<input type="text" value="' + escHtml(acreage) + '" readonly style="opacity:0.6;cursor:default;" /></div>'
-      + '<div class="form-field"><label for="listing-price-' + lotNum + '">Asking Price</label>'
+
+      // Acreage
+      + '<div class="form-field"><label for="listing-acreage-' + lotNum + '">Acreage'
+      + '<span id="listing-acreage-req-' + lotNum + '" style="color:var(--accent-coral,#d9644a);font-size:0.8em;margin-left:3px;' + (isForSale ? '' : 'display:none') + '"> *</span>'
+      + '<span style="font-size:0.75rem;color:var(--text-light);font-weight:400;margin-left:6px">Required if For Sale</span></label>'
+      + '<input type="text" id="listing-acreage-' + lotNum + '" value="' + escHtml(listing.acreage || '') + '" placeholder="e.g. 0.75" /></div>'
+
+      // Email contact
+      + '<div class="form-field"><label for="listing-email-' + lotNum + '">Contact Email'
+      + '<span id="listing-email-req-' + lotNum + '" style="color:var(--accent-coral,#d9644a);font-size:0.8em;margin-left:3px;' + (isActive ? '' : 'display:none') + '"> *</span>'
+      + '<span style="font-size:0.75rem;color:var(--text-light);font-weight:400;margin-left:6px">Required if For Sale or Rental</span></label>'
+      + '<input type="email" id="listing-email-' + lotNum + '" value="' + escHtml(listing.email_contact || '') + '" placeholder="your@email.com" /></div>'
+
+      // Description (full width)
+      + '<div class="form-field listing-form-full"><label for="listing-desc-' + lotNum + '">Description'
+      + '<span id="listing-desc-req-' + lotNum + '" style="color:var(--accent-coral,#d9644a);font-size:0.8em;margin-left:3px;' + (isActive ? '' : 'display:none') + '"> *</span>'
+      + '<span style="font-size:0.75rem;color:var(--text-light);font-weight:400;margin-left:6px">Required if For Sale or Rental · max 500 characters</span></label>'
+      + '<textarea id="listing-desc-' + lotNum + '" rows="3" maxlength="500" placeholder="Describe your lot. Tip: tailor your description to the status you have selected (for sale, rental, or general info).">' + escHtml(listing.description || '') + '</textarea></div>'
+
+      // External URL (full width)
+      + '<div class="form-field listing-form-full"><label for="listing-url-' + lotNum + '">External URL</label>'
+      + '<input type="text" id="listing-url-' + lotNum + '" value="' + escHtml(listing.external_sale_url || '') + '" placeholder="https://…" />'
+      + '<span style="font-size:0.75rem;color:var(--text-light);font-style:italic">Add an external link to sell, rent, or just showcase your property.</span></div>'
+
+      // Asking Price (for_sale only)
+      + '<div class="form-field" id="listing-price-wrap-' + lotNum + '"' + (isForSale ? '' : ' style="display:none"') + '>'
+      + '<label for="listing-price-' + lotNum + '">Asking Price <span style="font-size:0.75rem;color:var(--text-light);font-weight:400">(optional — only shown if entered)</span></label>'
       + '<input type="text" id="listing-price-' + lotNum + '" value="' + escHtml(listing.price || '') + '" placeholder="e.g. $250,000" /></div>'
-      + '<div class="form-field listing-form-full"><label for="listing-desc-' + lotNum + '">Description</label>'
-      + '<textarea id="listing-desc-' + lotNum + '" rows="3">' + escHtml(listing.description || '') + '</textarea></div>'
-      + '<div class="form-field listing-form-full"><label for="listing-structures-' + lotNum + '">Existing Structures</label>'
-      + '<textarea id="listing-structures-' + lotNum + '" rows="2" placeholder="e.g. Cleared foundation, water hookup installed">' + escHtml(listing.existing_structures || '') + '</textarea></div>'
-      + '<div class="form-field listing-form-full"><label for="listing-url-' + lotNum + '">External Sale URL</label>'
-      + '<input type="text" id="listing-url-' + lotNum + '" value="' + escHtml(listing.external_sale_url || '') + '" placeholder="https://…" /></div>'
+
+      // Availability Notes (rental only)
+      + '<div class="form-field listing-form-full" id="listing-avail-wrap-' + lotNum + '"' + (isRental ? '' : ' style="display:none"') + '>'
+      + '<label for="listing-avail-' + lotNum + '">Availability Notes <span style="font-size:0.75rem;color:var(--text-light);font-weight:400">(optional — only shown if entered · max 100 characters)</span></label>'
+      + '<textarea id="listing-avail-' + lotNum + '" rows="2" maxlength="100" placeholder="e.g. Available June–August. Contact for weekly rates.">' + escHtml(listing.availability_notes || '') + '</textarea></div>'
+
       + '</div>'
       + '<button type="submit" class="btn-primary btn-sm" id="listing-save-' + lotNum + '">Save Listing</button>'
       + '</form>'
       + '</div>';
   }).join('');
 
-  panel.innerHTML = '<div class="page-header"><h1 class="page-title">My Listing</h1></div>'
+  panel.innerHTML = '<div class="page-header"><h1 class="page-title">My Lot(s)</h1></div>'
     + '<p style="font-family:var(--font-sans);font-size:0.875rem;color:var(--text-light);margin-bottom:1.5rem;">'
-    + 'Control how your lot(s) appear on the public properties page. Changes save immediately.</p>'
+    + 'Control how your lot(s) appear on the public properties page and map. Fields marked * are required when listing as For Sale or Rental.</p>'
     + sectionsHtml;
+}
+
+function updateListingFormFields(lotNum) {
+  const status    = document.getElementById('listing-status-' + lotNum).value;
+  const isForSale = status === 'for_sale';
+  const isRental  = status === 'rental';
+  const isActive  = isForSale || isRental;
+
+  var priceWrap = document.getElementById('listing-price-wrap-' + lotNum);
+  if (priceWrap) priceWrap.style.display = isForSale ? '' : 'none';
+
+  var availWrap = document.getElementById('listing-avail-wrap-' + lotNum);
+  if (availWrap) availWrap.style.display = isRental ? '' : 'none';
+
+  var acreageReq = document.getElementById('listing-acreage-req-' + lotNum);
+  if (acreageReq) acreageReq.style.display = isForSale ? '' : 'none';
+
+  var descReq = document.getElementById('listing-desc-req-' + lotNum);
+  if (descReq) descReq.style.display = isActive ? '' : 'none';
+
+  var emailReq = document.getElementById('listing-email-req-' + lotNum);
+  if (emailReq) emailReq.style.display = isActive ? '' : 'none';
 }
 
 async function saveListing(e, lotNum) {
   e.preventDefault();
-  const status              = document.getElementById('listing-status-'     + lotNum).value;
-  const price               = document.getElementById('listing-price-'      + lotNum).value.trim();
-  const description         = document.getElementById('listing-desc-'       + lotNum).value.trim();
-  const existing_structures = document.getElementById('listing-structures-' + lotNum).value.trim();
-  const external_sale_url   = document.getElementById('listing-url-'        + lotNum).value.trim();
+  const status             = document.getElementById('listing-status-'  + lotNum).value;
+  const acreage            = document.getElementById('listing-acreage-' + lotNum).value.trim();
+  const email_contact      = document.getElementById('listing-email-'   + lotNum).value.trim();
+  const description        = document.getElementById('listing-desc-'    + lotNum).value.trim();
+  const external_sale_url  = document.getElementById('listing-url-'     + lotNum).value.trim();
+  const priceEl            = document.getElementById('listing-price-'   + lotNum);
+  const availEl            = document.getElementById('listing-avail-'   + lotNum);
+  const price              = priceEl ? priceEl.value.trim() : '';
+  const availability_notes = availEl ? availEl.value.trim() : '';
   const btn = document.getElementById('listing-save-' + lotNum);
+
+  const isActive = status === 'for_sale' || status === 'rental';
+
+  if (status === 'for_sale' && !acreage) {
+    showToast('Acreage is required for For Sale listings.', 'error');
+    return;
+  }
+  if (isActive && !description) {
+    showToast('Description is required for For Sale and Rental listings.', 'error');
+    return;
+  }
+  if (isActive && !email_contact) {
+    showToast('Contact email is required for For Sale and Rental listings.', 'error');
+    return;
+  }
 
   btn.disabled = true;
   btn.textContent = 'Saving…';
@@ -1347,10 +1476,12 @@ async function saveListing(e, lotNum) {
   const { error } = await sb.from('lot_listings').upsert({
     lot_number: lotNum,
     status,
-    price,
-    description,
-    existing_structures,
-    external_sale_url,
+    acreage: acreage || null,
+    price: price || null,
+    description: description || null,
+    external_sale_url: external_sale_url || null,
+    email_contact: email_contact || null,
+    availability_notes: availability_notes || null,
     updated_by: currentOwner.id,
     updated_at: new Date().toISOString(),
   }, { onConflict: 'lot_number' });
@@ -1363,7 +1494,9 @@ async function saveListing(e, lotNum) {
   }
 
   const toastMsg = status === 'for_sale'
-    ? 'Lot ' + lotLabel(lotNum) + ' listed for sale — the board will be notified.'
+    ? 'Lot ' + lotLabel(lotNum) + ' listed for sale.'
+    : status === 'rental'
+    ? 'Lot ' + lotLabel(lotNum) + ' listed as rental.'
     : 'Lot ' + lotLabel(lotNum) + ' listing updated.';
   showToast(toastMsg, 'success');
   btn.disabled = false;
