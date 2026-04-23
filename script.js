@@ -109,6 +109,11 @@ function escHtml(str) {
     .replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
 }
 
+function safeUrl(url) {
+  if (!url) return '#';
+  return /^https?:\/\//i.test(url) ? escHtml(url) : '#';
+}
+
 // ---- Load data and render listings ----
 let lotsData = null;
 let listingsData = null;
@@ -240,7 +245,7 @@ function renderForSale() {
       : '';
 
     const ctaBtn = row.external_sale_url
-      ? `<a href="${escHtml(row.external_sale_url)}" class="listing-contact" target="_blank" rel="noopener">View Listing</a>`
+      ? `<a href="${safeUrl(row.external_sale_url)}" class="listing-contact" target="_blank" rel="noopener">View Listing</a>`
       : row.email_contact
       ? `<a href="mailto:${escHtml(row.email_contact)}?subject=${encodeURIComponent('Inquiry: Lot ' + lotName)}" class="listing-contact">Inquire</a>`
       : '';
@@ -294,7 +299,7 @@ function renderLotRentalCard(row) {
     : '';
 
   const ctaBtn = row.external_sale_url
-    ? `<a href="${escHtml(row.external_sale_url)}" class="listing-contact" target="_blank" rel="noopener">View Listing</a>`
+    ? `<a href="${safeUrl(row.external_sale_url)}" class="listing-contact" target="_blank" rel="noopener">View Listing</a>`
     : row.email_contact
     ? `<a href="mailto:${escHtml(row.email_contact)}?subject=${encodeURIComponent('Rental Inquiry: Lot ' + lotName)}" class="listing-contact">Inquire</a>`
     : '';
@@ -328,7 +333,7 @@ function renderLotRentalCard(row) {
 
 function renderForRent() {
   const grid = document.getElementById('for-rent-grid');
-  if (!grid || !listingsData.forRent) return;
+  if (!grid || !listingsData?.forRent) return;
 
   let hasAirbnb = false;
 
@@ -368,9 +373,9 @@ function renderForRent() {
       : '';
 
     const ctaBtn = listing.website
-      ? `<a href="${escHtml(listing.website)}" class="listing-contact" target="_blank" rel="noopener">Visit Website</a>`
+      ? `<a href="${safeUrl(listing.website)}" class="listing-contact" target="_blank" rel="noopener">Visit Website</a>`
       : listing.bookingLink
-      ? `<a href="${escHtml(listing.bookingLink)}" class="listing-contact" target="_blank" rel="noopener">${listing.airbnbId ? 'Book on Airbnb' : 'Visit Site'}</a>`
+      ? `<a href="${safeUrl(listing.bookingLink)}" class="listing-contact" target="_blank" rel="noopener">${listing.airbnbId ? 'Book on Airbnb' : 'Visit Site'}</a>`
       : `<button class="listing-contact" onclick="openContactModal('${escHtml(listing.id)}', '${listing.title.replace(/'/g, "\\'")}')">Request Info</button>`;
 
     return `

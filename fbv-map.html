@@ -762,7 +762,7 @@
     // ═══════════════════════════════════════════════════════════════
 
     function makeLotIcon(prop, index) {
-      const status = LOT_STATUS[prop.name] || 'not-available';
+      const status = LOT_STATUS[prop.name] || 'not_available';
       const cfg    = STATUS_CONFIG[status];
       const color  = cfg.color;
       const isShore  = prop.type === 'Shore';
@@ -961,7 +961,7 @@
 
       // External URL — only if value present
       const urlRow = document.getElementById('panel-url-row');
-      if (d.external_sale_url) {
+      if (d.external_sale_url && /^https?:\/\//i.test(d.external_sale_url)) {
         document.getElementById('panel-url-link').href = d.external_sale_url;
         urlRow.style.display = '';
       } else {

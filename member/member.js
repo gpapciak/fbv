@@ -380,7 +380,7 @@ async function loadDues() {
 
     let actions = '';
     if (!isPaid) {
-      actions += '<button class="btn-ghost btn-sm" onclick="openPaymentModal(\'' + due.id + '\',' + due.amount_cents + ',\'' + escHtml(due.owners ? due.owners.email : currentOwner.email) + '\')">Pay Now</button> ';
+      actions += '<button class="btn-ghost btn-sm" data-due-id="' + escHtml(due.id) + '" data-amount="' + due.amount_cents + '" data-email="' + escHtml(due.owners ? due.owners.email : currentOwner.email) + '" onclick="openPaymentModal(this.dataset.dueId, Number(this.dataset.amount), this.dataset.email)">Pay Now</button> ';
     }
     if (currentOwner.is_admin && !isPaid) {
       actions += '<button class="btn-ghost btn-sm admin-only" onclick="markPaid(\'' + due.id + '\')">Mark Paid</button>';
@@ -1459,6 +1459,10 @@ async function saveListing(e, lotNum) {
   }
   if (isActive && !email_contact) {
     showToast('Contact email is required for For Sale and Rental listings.', 'error');
+    return;
+  }
+  if (external_sale_url && !/^https?:\/\//i.test(external_sale_url)) {
+    showToast('External URL must start with https:// or http://', 'error');
     return;
   }
 
