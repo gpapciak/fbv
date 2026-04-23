@@ -6,8 +6,14 @@
 
 // ---- Nav scroll behavior ----
 const nav = document.getElementById('site-nav');
+let _navTicking = false;
 window.addEventListener('scroll', () => {
-  nav.classList.toggle('scrolled', window.scrollY > 60);
+  if (_navTicking) return;
+  _navTicking = true;
+  requestAnimationFrame(() => {
+    nav.classList.toggle('scrolled', window.scrollY > 60);
+    _navTicking = false;
+  });
 }, { passive: true });
 
 // ---- Mobile hamburger ----
@@ -95,20 +101,7 @@ let sb = null;
   }
 })();
 
-// ---- Helpers ----
-function lotLabel(n) {
-  if (n >= 200) return 'I' + (n - 200);
-  if (n >= 100) return 'S' + (n - 100);
-  return String(n);
-}
-
-function escHtml(str) {
-  if (str == null) return '';
-  return String(str)
-    .replace(/&/g, '&amp;').replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
-}
-
+// ---- Helpers ---- (escHtml / lotLabel live in utils.js)
 function safeUrl(url) {
   if (!url) return '#';
   return /^https?:\/\//i.test(url) ? escHtml(url) : '#';
@@ -481,14 +474,20 @@ function initIslandScrollspy() {
   const links = document.querySelectorAll('.island-subnav-link');
   if (!links.length) return;
   const chapters = Array.from(links).map(l => document.querySelector(l.getAttribute('href'))).filter(Boolean);
+  let _spyTicking = false;
   const activate = () => {
-    const mid = window.scrollY + window.innerHeight * 0.35;
-    let active = chapters[0];
-    for (const ch of chapters) {
-      if (ch.getBoundingClientRect().top + window.scrollY <= mid) active = ch;
-    }
-    links.forEach(l => {
-      l.classList.toggle('active', l.getAttribute('href') === '#' + active.id);
+    if (_spyTicking) return;
+    _spyTicking = true;
+    requestAnimationFrame(() => {
+      const mid = window.scrollY + window.innerHeight * 0.35;
+      let active = chapters[0];
+      for (const ch of chapters) {
+        if (ch.getBoundingClientRect().top + window.scrollY <= mid) active = ch;
+      }
+      links.forEach(l => {
+        l.classList.toggle('active', l.getAttribute('href') === '#' + active.id);
+      });
+      _spyTicking = false;
     });
   };
   window.addEventListener('scroll', activate, { passive: true });
@@ -857,12 +856,22 @@ function initWeatherWidget() {
     }
   });
 
-  // Fetch + render
+  // Fetch + render (cached in sessionStorage for 15 minutes)
+  const WEATHER_CACHE_KEY = 'fbv_weather';
+  const WEATHER_CACHE_TTL = 15 * 60 * 1000;
+
   async function fetchWeather() {
     try {
+      const cached = sessionStorage.getItem(WEATHER_CACHE_KEY);
+      if (cached) {
+        const { ts, data } = JSON.parse(cached);
+        if (Date.now() - ts < WEATHER_CACHE_TTL) { renderWeather(data); return; }
+      }
       const res = await fetch(API);
       if (!res.ok) throw new Error(res.status);
-      renderWeather(await res.json());
+      const data = await res.json();
+      sessionStorage.setItem(WEATHER_CACHE_KEY, JSON.stringify({ ts: Date.now(), data }));
+      renderWeather(data);
     } catch (err) {
       console.error('Weather fetch failed:', err);
       document.getElementById('weather-pill-temp').textContent = '--°F';

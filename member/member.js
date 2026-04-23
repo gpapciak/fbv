@@ -447,7 +447,7 @@ async function loadDues() {
 // =====================================================
 
 function openPaymentModal(dueId, amountCents, ownerEmail) {
-  const feeCents = Math.round(amountCents * 0.029 + 30);
+  const feeCents = Math.round(amountCents * 0.029 + 30); // Stripe fee: 2.9% + $0.30
   const totalCents = amountCents + feeCents;
 
   document.getElementById('pay-due-id').value = dueId;
@@ -721,6 +721,11 @@ async function loadDirectory() {
   const profileForm = document.getElementById('profile-form');
   if (profileForm) {
     profileForm.onsubmit = saveProfile;
+    const bioEl   = document.getElementById('profile-bio');
+    const countEl = document.getElementById('bio-count');
+    if (bioEl && countEl) {
+      bioEl.addEventListener('input', function () { countEl.textContent = bioEl.value.length; });
+    }
   }
 }
 
@@ -737,7 +742,7 @@ function renderProfileEditForm() {
     + '</div>'
     + '<div class="form-field"><label for="profile-bio">Bio</label>'
     + '<textarea id="profile-bio" rows="2" maxlength="500" placeholder="A little about yourself…">' + escHtml(o.bio || '') + '</textarea>'
-    + '<span style="font-size:0.75rem;color:var(--text-light)">Max 500 characters</span></div>'
+    + '<span id="bio-counter" style="font-size:0.75rem;color:var(--text-light)"><span id="bio-count">' + (o.bio || '').length + '</span>/500</span></div>'
     + '<div class="form-field"><label for="profile-pics">My FBV Pics</label>'
     + '<input type="text" id="profile-pics" value="' + escHtml(o.fbv_pics_url || '') + '" placeholder="https://photos.app.goo.gl/…" />'
     + '<span style="font-size:0.75rem;color:var(--text-light);font-style:italic">Link to a shared Google Photos album, Dropbox folder, or any public photo gallery.</span></div>'
@@ -1623,12 +1628,6 @@ document.getElementById('payment-form').onsubmit = submitPayment;
 // UTILITIES
 // =====================================================
 
-function lotLabel(n) {
-  if (n >= 200) return 'I' + (n - 200);
-  if (n >= 100) return 'S' + (n - 100);
-  return String(n);
-}
-
 function formatCurrency(cents) {
   return '$' + (cents / 100).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
 }
@@ -1650,16 +1649,6 @@ function timeAgo(dt) {
   const days = Math.floor(hours / 24);
   if (days < 30) return days + 'd ago';
   return formatDate(dt);
-}
-
-function escHtml(str) {
-  if (str == null) return '';
-  return String(str)
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#39;');
 }
 
 function initials(name) {
