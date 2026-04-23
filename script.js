@@ -734,7 +734,12 @@ function initClimateChart() {
     if (r.top < window.innerHeight + 80 && r.bottom > 0) {
       animated = true;
       window.removeEventListener('scroll', maybeAnimate, true);
-      animateTo(targets);
+      if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+        animVals = targets.map(v => ({ ...v }));
+        renderChart();
+      } else {
+        animateTo(targets);
+      }
     }
   }
 

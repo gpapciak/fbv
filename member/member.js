@@ -479,9 +479,12 @@ function openPaymentModal(dueId, amountCents, ownerEmail) {
     });
     cardElement.mount('#card-element');
   } else {
-    document.getElementById('card-element').innerHTML =
-      '<p style="font-family:var(--font-sans);font-size:0.85rem;color:var(--text-light);">'
-      + 'Stripe not configured. Add your Stripe publishable key to member/config.js.</p>';
+    const cardEl = document.getElementById('card-element');
+    if (cardEl) {
+      cardEl.innerHTML =
+        '<p style="font-family:var(--font-sans);font-size:0.85rem;color:var(--text-light);">'
+        + 'Stripe not configured. Add your Stripe publishable key to member/config.js.</p>';
+    }
   }
 
   openModal('payment-modal');
@@ -1512,20 +1515,43 @@ async function saveListing(e, lotNum) {
 // MODAL HELPERS
 // =====================================================
 
+const _FOCUSABLE_SEL = 'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
+let _focusTrapHandler = null;
+let _focusBefore = null;
+
 function openModal(id) {
   const modal = document.getElementById(id);
-  if (modal) {
-    modal.hidden = false;
-    // Focus first focusable element
-    const first = modal.querySelector('input, select, textarea, button:not(.modal-close)');
-    if (first) setTimeout(function () { first.focus(); }, 50);
-  }
+  if (!modal) return;
+  _focusBefore = document.activeElement;
+  modal.hidden = false;
+
+  const focusable = Array.from(modal.querySelectorAll(_FOCUSABLE_SEL));
+  const first = focusable[0];
+  const last  = focusable[focusable.length - 1];
+  if (first) setTimeout(function () { first.focus(); }, 50);
+
+  if (_focusTrapHandler) document.removeEventListener('keydown', _focusTrapHandler, true);
+  _focusTrapHandler = function (e) {
+    if (e.key !== 'Tab' || !focusable.length) return;
+    if (e.shiftKey) {
+      if (document.activeElement === first) { e.preventDefault(); last.focus(); }
+    } else {
+      if (document.activeElement === last)  { e.preventDefault(); first.focus(); }
+    }
+  };
+  document.addEventListener('keydown', _focusTrapHandler, true);
 }
 
 function closeAllModals() {
-  document.querySelectorAll('.modal').forEach(function (m) {
-    m.hidden = true;
-  });
+  document.querySelectorAll('.modal').forEach(function (m) { m.hidden = true; });
+  if (_focusTrapHandler) {
+    document.removeEventListener('keydown', _focusTrapHandler, true);
+    _focusTrapHandler = null;
+  }
+  if (_focusBefore && typeof _focusBefore.focus === 'function') {
+    try { _focusBefore.focus(); } catch (_) {}
+    _focusBefore = null;
+  }
 }
 
 // Modal overlay click to close

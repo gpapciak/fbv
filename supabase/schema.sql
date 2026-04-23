@@ -270,7 +270,7 @@ CREATE POLICY "documents_insert_authenticated"
 CREATE POLICY "documents_delete_own_or_admin"
   ON documents FOR DELETE
   TO authenticated
-  USING (uploaded_by = current_owner_id() OR is_admin());
+  USING (uploaded_by IS NOT DISTINCT FROM current_owner_id() OR is_admin());
 
 -- ---- announcements policies ----
 
