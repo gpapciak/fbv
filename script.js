@@ -231,7 +231,7 @@ function renderForSale() {
 
     const acreageLine = `<span><svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor"><path d="M8 1C4.7 1 2 3.7 2 7c0 4.5 6 8 6 8s6-3.5 6-8c0-3.3-2.7-6-6-6zm0 8a2 2 0 1 1 0-4 2 2 0 0 1 0 4z"/></svg> ${acreage ? escHtml(acreage) + ' acres' : '—'}</span>`;
 
-    const descLine = `<p class="listing-description">${row.description ? escHtml(row.description) : '<em style="opacity:0.5">No description provided.</em>'}</p>`;
+    const descLine = `<p class="listing-description">${row.description ? formatDesc(row.description) : '<em style="opacity:0.5">No description provided.</em>'}</p>`;
 
     const priceLine = row.price
       ? `<p class="listing-description" style="margin-top:0.25rem"><strong>Asking:</strong> ${escHtml(row.price)}</p>`
@@ -285,7 +285,7 @@ function renderLotRentalCard(row) {
 
   const acreageLine = `<span><svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor"><path d="M8 1C4.7 1 2 3.7 2 7c0 4.5 6 8 6 8s6-3.5 6-8c0-3.3-2.7-6-6-6zm0 8a2 2 0 1 1 0-4 2 2 0 0 1 0 4z"/></svg> ${acreage ? escHtml(acreage) + ' acres' : '—'}</span>`;
 
-  const descLine = `<p class="listing-description">${row.description ? escHtml(row.description) : '<em style="opacity:0.5">No description provided.</em>'}</p>`;
+  const descLine = `<p class="listing-description">${row.description ? formatDesc(row.description) : '<em style="opacity:0.5">No description provided.</em>'}</p>`;
 
   const availLine = row.availability_notes
     ? `<p class="listing-description" style="margin-top:0.25rem"><strong>Availability:</strong> ${escHtml(row.availability_notes)}</p>`
@@ -377,7 +377,7 @@ function renderForRent() {
       <div class="listing-body">
         ${listing.lotNumber ? `<div class="listing-lot">Lot ${listing.lotNumber}</div>` : ''}
         <h3 class="listing-title">${escHtml(listing.title)}</h3>
-        <p class="listing-description">${escHtml(listing.shortDescription)}</p>
+        <p class="listing-description">${formatDesc(listing.shortDescription)}</p>
         ${listing.amenities.length ? `
           <div class="listing-features">
             ${listing.amenities.map(a => `<span class="feature-tag">${escHtml(a)}</span>`).join('')}

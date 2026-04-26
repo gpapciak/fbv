@@ -562,6 +562,7 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="member/config.js"></script>
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="utils.js"></script>
   <script>
     // ═══════════════════════════════════════════════════════════════
     // CONFIGURATION — edit these freely
@@ -936,7 +937,7 @@
       document.getElementById('panel-acreage').textContent = d.acreage || '—';
 
       // Description — always show
-      document.getElementById('panel-description').textContent = d.description || '';
+      document.getElementById('panel-description').innerHTML = formatDesc(d.description || '');
 
       // Asking Price — for_sale only, only if value present
       const priceRow = document.getElementById('panel-price-row');
@@ -1026,8 +1027,8 @@
 
       document.getElementById('rental-panel-badge').textContent = (listing && listing.badge) ? listing.badge : 'For Rent';
       document.getElementById('rental-panel-title').textContent = name;
-      document.getElementById('rental-panel-desc').textContent =
-        (listing && listing.shortDescription) ? listing.shortDescription : '';
+      document.getElementById('rental-panel-desc').innerHTML =
+        formatDesc((listing && listing.shortDescription) ? listing.shortDescription : '');
 
       const imageEl = document.getElementById('rental-panel-image');
       const ctaEl   = document.getElementById('rental-panel-cta');
