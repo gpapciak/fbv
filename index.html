@@ -142,133 +142,218 @@
 
       <div class="about-visual fade-in delay-2">
         <div class="about-image-stack">
-          <!-- Main illustrated scene -->
+
           <div class="about-img-main">
-            <svg class="scene-jungle" viewBox="0 0 320 420" xmlns="http://www.w3.org/2000/svg">
+            <svg id="fbv-scene" class="scene-jungle" viewBox="0 0 320 420" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
+
               <defs>
-                <linearGradient id="sky-grad" x1="0%" y1="0%" x2="0%" y2="100%">
-                  <stop offset="0%" style="stop-color:#0d2f3a"/>
-                  <stop offset="50%" style="stop-color:#1e5c5c"/>
-                  <stop offset="100%" style="stop-color:#2a8080"/>
+                <linearGradient id="b3-sky" x1="0%" y1="0%" x2="0%" y2="100%">
+                  <stop offset="0%" stop-color="#e8c89a"/>
+                  <stop offset="35%" stop-color="#d8a888"/>
+                  <stop offset="70%" stop-color="#9ab5b0"/>
+                  <stop offset="100%" stop-color="#5a9494"/>
                 </linearGradient>
-                <linearGradient id="water-grad" x1="0%" y1="0%" x2="0%" y2="100%">
-                  <stop offset="0%" style="stop-color:#2a8080;stop-opacity:0.9"/>
-                  <stop offset="100%" style="stop-color:#1e5c5c"/>
+                <radialGradient id="b3-sun" cx="38%" cy="22%" r="38%">
+                  <stop offset="0%" stop-color="#fbe5c0" stop-opacity="0.9"/>
+                  <stop offset="50%" stop-color="#f0b878" stop-opacity="0.35"/>
+                  <stop offset="100%" stop-color="#f0b878" stop-opacity="0"/>
+                </radialGradient>
+                <linearGradient id="b3-water" x1="0%" y1="0%" x2="0%" y2="100%">
+                  <stop offset="0%" stop-color="#3d8a8a"/>
+                  <stop offset="60%" stop-color="#1e5c5c"/>
+                  <stop offset="100%" stop-color="#0d3232"/>
                 </linearGradient>
-                <linearGradient id="jungle-grad" x1="0%" y1="0%" x2="0%" y2="100%">
-                  <stop offset="0%" style="stop-color:#2d5a3d"/>
-                  <stop offset="100%" style="stop-color:#1a3a2a"/>
+                <linearGradient id="b3-mist" x1="0%" y1="0%" x2="0%" y2="100%">
+                  <stop offset="0%" stop-color="#e8c89a" stop-opacity="0"/>
+                  <stop offset="50%" stop-color="#d8a888" stop-opacity="0.4"/>
+                  <stop offset="100%" stop-color="#d8a888" stop-opacity="0"/>
+                </linearGradient>
+                <linearGradient id="b3-canopy-far" x1="0%" y1="0%" x2="0%" y2="100%">
+                  <stop offset="0%" stop-color="#3d7a55"/>
+                  <stop offset="100%" stop-color="#2d5a3d"/>
+                </linearGradient>
+                <linearGradient id="b3-shore" x1="0%" y1="0%" x2="0%" y2="100%">
+                  <stop offset="0%" stop-color="#c9a87a"/>
+                  <stop offset="100%" stop-color="#a0714f"/>
+                </linearGradient>
+                <linearGradient id="b3-jungle-near" x1="0%" y1="0%" x2="0%" y2="100%">
+                  <stop offset="0%" stop-color="#2d5a3d"/>
+                  <stop offset="100%" stop-color="#1a3a2a"/>
                 </linearGradient>
               </defs>
 
-              <!-- Sky/water background -->
-              <rect width="320" height="420" fill="url(#sky-grad)"/>
+              <!-- Sky base — always visible -->
+              <rect width="320" height="420" fill="url(#b3-sky)"/>
 
-              <!-- Water shimmer lines -->
-              <path d="M0 260 Q80 250 160 260 Q240 270 320 260" stroke="rgba(155,216,216,0.25)" stroke-width="1.5" fill="none"/>
-              <path d="M0 275 Q60 265 120 275 Q200 285 320 272" stroke="rgba(155,216,216,0.18)" stroke-width="1" fill="none"/>
-              <path d="M0 290 Q100 280 200 292 Q260 298 320 285" stroke="rgba(155,216,216,0.15)" stroke-width="1" fill="none"/>
-
-              <!-- Distant island/hills -->
-              <path d="M0 240 Q50 200 120 210 Q180 218 250 200 Q290 190 320 205 L320 260 L0 260Z" fill="rgba(29,70,50,0.7)"/>
-
-              <!-- Jungle canopy back -->
-              <path d="M-10 300 C20 250 60 240 100 255 C140 268 150 240 190 248 C230 256 260 235 310 248 L320 420 L-10 420Z" fill="url(#jungle-grad)"/>
-              <!-- Mid canopy -->
-              <circle cx="60" cy="270" r="45" fill="#1a3a2a"/>
-              <circle cx="110" cy="255" r="38" fill="#2d5a3d"/>
-              <circle cx="160" cy="265" r="42" fill="#1a3a2a"/>
-              <circle cx="220" cy="250" r="50" fill="#2d5a3d"/>
-              <circle cx="280" cy="262" r="40" fill="#1a3a2a"/>
-              <!-- Foreground canopy -->
-              <circle cx="30" cy="310" r="55" fill="#1a3a2a"/>
-              <circle cx="100" cy="295" r="50" fill="#243f2e"/>
-              <circle cx="180" cy="305" r="60" fill="#1a3a2a"/>
-              <circle cx="270" cy="295" r="55" fill="#243f2e"/>
-
-              <!-- Palm fronds -->
-              <g fill="#1f4030" opacity="0.9">
-                <path d="M140 200 Q110 170 90 155 Q115 175 120 200Z"/>
-                <path d="M140 200 Q160 155 180 145 Q165 175 145 202Z"/>
-                <path d="M140 200 Q130 160 145 140 Q145 165 142 202Z"/>
-                <path d="M140 200 Q95 185 75 190 Q105 190 138 202Z"/>
-              </g>
-              <line x1="140" y1="200" x2="140" y2="290" stroke="#1a3a2a" stroke-width="5"/>
-
-              <!-- Dock -->
-              <rect x="145" y="230" width="4" height="35" fill="rgba(160,113,79,0.8)" rx="1"/>
-              <rect x="148" y="255" width="20" height="3" fill="rgba(160,113,79,0.7)" rx="1"/>
-
-              <!-- Dolphin silhouette -->
-              <g transform="translate(55,238) rotate(-15)">
-                <path d="M0,8 C8,2 18,0 26,4 C32,7 34,12 28,14 C22,16 10,14 0,8Z" fill="rgba(42,128,128,0.7)"/>
-                <path d="M26,4 C32,-2 36,1 34,6Z" fill="rgba(42,128,128,0.6)"/>
-              </g>
-              <g transform="translate(85,244) rotate(-8)">
-                <path d="M0,6 C6,1 14,0 20,3 C25,5 26,9 22,11 C16,13 8,11 0,6Z" fill="rgba(42,128,128,0.6)"/>
-                <path d="M20,3 C25,-1 27,1 26,4Z" fill="rgba(42,128,128,0.5)"/>
+              <!-- STAGE 1: Sun -->
+              <g class="fbv-fade" data-stage="0.03">
+                <ellipse cx="122" cy="78" rx="115" ry="92" fill="url(#b3-sun)"/>
+                <circle cx="122" cy="78" r="20" fill="#fbe5c0" opacity="0.92"/>
               </g>
 
-              <!-- Stars/sun glints on water -->
-              <circle cx="200" cy="243" r="1.5" fill="rgba(255,255,200,0.6)"/>
-              <circle cx="240" cy="248" r="1" fill="rgba(255,255,200,0.4)"/>
-              <circle cx="175" cy="250" r="1" fill="rgba(255,255,200,0.3)"/>
+              <!-- STAGE 2: Atmospheric mist over horizon -->
+              <g class="fbv-fade" data-stage="0.1">
+                <path d="M0 148 Q60 142 120 146 Q180 150 240 142 Q290 138 320 144 L320 168 Q290 170 240 164 Q180 158 120 166 Q60 170 0 164 Z" fill="url(#b3-mist)"/>
+              </g>
+
+              <!-- STAGE 3: Far canopy / island silhouette -->
+              <g class="fbv-fade" data-stage="0.15">
+                <path d="M0 168 Q40 152 90 160 Q140 168 180 154 Q220 146 260 156 Q290 162 320 154 L320 195 L0 195 Z" fill="url(#b3-canopy-far)" opacity="0.92"/>
+                <g fill="#2d5a3d" opacity="0.55">
+                  <circle cx="40" cy="172" r="14"/>
+                  <circle cx="95" cy="166" r="16"/>
+                  <circle cx="155" cy="172" r="13"/>
+                  <circle cx="215" cy="168" r="15"/>
+                  <circle cx="275" cy="172" r="14"/>
+                </g>
+              </g>
+
+              <!-- STAGE 4: Bay water + ripples -->
+              <g class="fbv-fade" data-stage="0.22">
+                <path d="M0 195 L320 195 L320 360 Q260 358 220 360 Q160 362 100 358 Q50 356 0 358 Z" fill="url(#b3-water)"/>
+                <path d="M0 195 Q60 198 120 195 Q180 192 240 196 Q290 198 320 195 L320 205 L0 205 Z" fill="#5a9494" opacity="0.55"/>
+                <g stroke="#9dd8d8" stroke-width="1.2" fill="none" opacity="0.55">
+                  <path d="M0 220 Q60 216 120 222 Q180 228 240 220 Q290 216 320 220"/>
+                  <path d="M0 240 Q80 235 160 242 Q240 249 320 239"/>
+                  <path d="M0 263 Q60 258 120 265 Q200 272 320 261"/>
+                  <path d="M0 287 Q100 282 200 289 Q280 294 320 287"/>
+                  <path d="M0 312 Q80 307 160 314 Q240 321 320 310"/>
+                  <path d="M0 336 Q120 331 240 339 Q300 343 320 337"/>
+                </g>
+              </g>
+
+              <!-- STAGE 5: Sun reflection on water -->
+              <g class="fbv-fade" data-stage="0.3">
+                <path d="M62 200 Q82 197 102 200 Q122 203 142 200 Q127 205 102 205 Q82 205 62 202 Z" fill="#fbe5c0" opacity="0.65"/>
+                <path d="M72 220 Q92 218 112 220 Q132 223 142 222 Q127 227 107 227 Q87 226 72 223 Z" fill="#fbe5c0" opacity="0.5"/>
+                <path d="M82 245 Q97 243 112 245 Q127 248 132 248 Q117 252 102 251 Q89 249 82 247 Z" fill="#fbe5c0" opacity="0.4"/>
+                <path d="M87 273 Q102 271 117 273 Q127 275 125 276 Q112 279 99 278 Q90 276 87 274 Z" fill="#fbe5c0" opacity="0.3"/>
+                <path d="M92 301 Q105 300 115 301 Q112 304 99 303 Q93 302 92 302 Z" fill="#fbe5c0" opacity="0.22"/>
+                <circle cx="97" cy="213" r="1.4" fill="#fbe5c0" opacity="0.9"/>
+                <circle cx="132" cy="230" r="1" fill="#fbe5c0" opacity="0.7"/>
+                <circle cx="77" cy="250" r="1.1" fill="#fbe5c0" opacity="0.7"/>
+                <circle cx="152" cy="257" r="0.9" fill="#fbe5c0" opacity="0.6"/>
+                <circle cx="107" cy="283" r="0.8" fill="#fbe5c0" opacity="0.5"/>
+                <circle cx="62" cy="300" r="0.9" fill="#fbe5c0" opacity="0.55"/>
+                <circle cx="172" cy="312" r="0.7" fill="#fbe5c0" opacity="0.45"/>
+                <circle cx="87" cy="330" r="0.7" fill="#fbe5c0" opacity="0.4"/>
+              </g>
+
+              <!-- STAGE 6: Dolphins -->
+              <g class="fbv-fade" data-stage="0.36">
+                <g transform="translate(40,265)">
+                  <path d="M0,4 Q10,-4 24,-1 Q32,2 35,5 Q24,8 0,4 Z" fill="#0d2b1e"/>
+                  <path d="M24,-1 Q30,-9 35,-4 Q28,1 24,-1 Z" fill="#0d2b1e"/>
+                  <path d="M2,4 Q12,2 22,3" stroke="#9dd8d8" stroke-width="0.7" fill="none" opacity="0.6"/>
+                </g>
+                <g transform="translate(105,283) scale(0.85)">
+                  <path d="M0,3 Q8,-4 20,-1 Q26,1 28,4 Q20,6 0,3 Z" fill="#0d2b1e" opacity="0.9"/>
+                  <path d="M20,-1 Q25,-7 28,-3 Q23,1 20,-1 Z" fill="#0d2b1e" opacity="0.9"/>
+                </g>
+                <g transform="translate(70,310) scale(0.7)">
+                  <path d="M0,2 Q7,-3 16,-1 Q21,1 22,3 Q16,4 0,2 Z" fill="#0d2b1e" opacity="0.75"/>
+                  <path d="M16,-1 Q19,-5 21,-2 Q18,1 16,-1 Z" fill="#0d2b1e" opacity="0.75"/>
+                </g>
+                <g transform="translate(35,270)" opacity="0.45">
+                  <ellipse cx="0" cy="0" rx="3" ry="0.8" fill="none" stroke="#9dd8d8" stroke-width="0.5"/>
+                  <ellipse cx="0" cy="0" rx="6" ry="1.5" fill="none" stroke="#9dd8d8" stroke-width="0.4"/>
+                  <ellipse cx="0" cy="0" rx="9" ry="2.2" fill="none" stroke="#9dd8d8" stroke-width="0.3"/>
+                </g>
+                <g transform="translate(103,288)" opacity="0.4">
+                  <ellipse cx="0" cy="0" rx="3" ry="0.7" fill="none" stroke="#9dd8d8" stroke-width="0.4"/>
+                  <ellipse cx="0" cy="0" rx="6" ry="1.4" fill="none" stroke="#9dd8d8" stroke-width="0.3"/>
+                </g>
+              </g>
+
+              <!-- STAGE 7: Shoreline -->
+              <g class="fbv-fade" data-stage="0.4">
+                <path d="M0 360 Q60 354 120 360 Q180 366 240 358 Q290 352 320 358 L320 420 L0 420 Z" fill="url(#b3-jungle-near)"/>
+                <g stroke="#0d2b1e" stroke-width="0.8" fill="none" stroke-linecap="round" opacity="0.85">
+                  <path d="M15 360 L15 364"/><path d="M22 359 L22 363"/><path d="M30 361 L30 365"/>
+                  <path d="M250 358 L250 362"/><path d="M258 359 L258 363"/><path d="M267 358 L267 362"/>
+                  <path d="M275 360 L275 364"/><path d="M295 357 L295 361"/><path d="M305 359 L305 363"/>
+                </g>
+                <path d="M40 360 Q70 358 100 362 Q120 365 130 362 L130 372 Q100 374 70 370 Q50 368 40 372 Z" fill="#3d7a55" opacity="0.85"/>
+                <path d="M40 360 Q70 358 100 362 Q120 365 130 362" stroke="#6aab7e" stroke-width="0.6" fill="none" opacity="0.5"/>
+                <path d="M155 362 Q175 360 195 363 Q210 365 220 363 L220 370 Q200 372 180 370 Q165 368 155 370 Z" fill="#3d7a55" opacity="0.7"/>
+                <g fill="#0d2b1e" opacity="0.7">
+                  <ellipse cx="35" cy="392" rx="22" ry="14"/>
+                  <ellipse cx="95" cy="397" rx="26" ry="15"/>
+                  <ellipse cx="165" cy="394" rx="24" ry="14"/>
+                  <ellipse cx="240" cy="396" rx="28" ry="15"/>
+                  <ellipse cx="305" cy="392" rx="22" ry="13"/>
+                </g>
+              </g>
+
+              <!-- STAGE 8: Foreground palms -->
+              <g class="fbv-fade" data-stage="0.45">
+                <g stroke="#3d2510" stroke-width="3" fill="none" stroke-linecap="round">
+                  <path d="M210 380 Q208 350 212 320 Q214 295 212 270"/>
+                </g>
+                <g stroke="#0d2b1e" stroke-width="2.2" fill="none" stroke-linecap="round">
+                  <path d="M212 273 Q193 252 180 246 Q194 260 208 282"/>
+                  <path d="M212 273 Q230 250 246 244 Q230 262 214 285"/>
+                  <path d="M212 273 Q204 245 208 226 Q212 250 212 280"/>
+                  <path d="M212 273 Q228 268 242 274 Q228 277 214 280"/>
+                  <path d="M212 273 Q198 280 186 282 Q200 282 210 282"/>
+                </g>
+                <g stroke="#3d2510" stroke-width="2.4" fill="none" stroke-linecap="round">
+                  <path d="M260 385 Q258 360 262 335 Q264 315 262 300"/>
+                </g>
+                <g stroke="#0d2b1e" stroke-width="1.9" fill="none" stroke-linecap="round">
+                  <path d="M262 303 Q244 286 234 280 Q246 292 258 308"/>
+                  <path d="M262 303 Q280 286 292 280 Q280 296 264 310"/>
+                  <path d="M262 303 Q256 282 260 268 Q262 288 262 310"/>
+                  <path d="M262 303 Q275 299 284 304 Q275 307 264 308"/>
+                </g>
+                <g stroke="#3d2510" stroke-width="2" fill="none" stroke-linecap="round">
+                  <path d="M298 380 Q296 358 300 336 Q302 318 300 304"/>
+                </g>
+                <g stroke="#0d2b1e" stroke-width="1.6" fill="none" stroke-linecap="round">
+                  <path d="M300 307 Q286 294 278 290 Q288 300 298 312"/>
+                  <path d="M300 307 Q314 294 320 292 Q312 304 302 314"/>
+                  <path d="M300 307 Q295 290 298 280 Q300 296 300 312"/>
+                </g>
+              </g>
+
+              <!-- STAGE 8b: Sloth -->
+              <g class="fbv-fade" data-stage="0.55">
+                <g transform="translate(212,278)">
+                  <ellipse cx="0" cy="3" rx="8" ry="5.5" fill="#a0714f"/>
+                  <ellipse cx="0" cy="5" rx="6" ry="3.5" fill="#c9a87a" opacity="0.6"/>
+                  <circle cx="6" cy="-1" r="4" fill="#a0714f"/>
+                  <ellipse cx="7" cy="-0.5" rx="2.8" ry="2.2" fill="#e8c89a"/>
+                  <circle cx="6" cy="-1" r="0.6" fill="#3d2510"/>
+                  <circle cx="8.2" cy="-1" r="0.6" fill="#3d2510"/>
+                  <path d="M7,0.3 Q7,1 7.3,1.2" stroke="#3d2510" stroke-width="0.4" fill="none" stroke-linecap="round"/>
+                  <path d="M-3,5 Q-5,9 -4,12" stroke="#6b3f22" stroke-width="2" fill="none" stroke-linecap="round"/>
+                  <path d="M3,6 Q5,10 4,13" stroke="#6b3f22" stroke-width="2" fill="none" stroke-linecap="round"/>
+                  <path d="M-3,-1 Q-5,-4 -4,-6" stroke="#6b3f22" stroke-width="1.8" fill="none" stroke-linecap="round"/>
+                  <path d="M-4,-6 Q-5.5,-7 -6,-7.5" stroke="#3d2510" stroke-width="1" fill="none" stroke-linecap="round"/>
+                </g>
+              </g>
+
+              <!-- STAGE 9: Dock -->
+              <g class="fbv-fade" data-stage="0.5">
+                <rect x="50" y="358" width="2" height="12" fill="#6b3f22"/>
+                <rect x="68" y="358" width="2" height="12" fill="#6b3f22"/>
+                <rect x="86" y="358" width="2" height="12" fill="#6b3f22"/>
+                <rect x="104" y="358" width="2" height="12" fill="#6b3f22"/>
+                <rect x="44" y="356" width="68" height="2.5" fill="#a0714f"/>
+                <rect x="44" y="358.5" width="68" height="1.5" fill="#6b3f22" opacity="0.7"/>
+                <line x1="51" y1="370" x2="51" y2="376" stroke="#1e5c5c" stroke-width="0.6" opacity="0.45"/>
+                <line x1="69" y1="370" x2="69" y2="376" stroke="#1e5c5c" stroke-width="0.6" opacity="0.45"/>
+                <line x1="87" y1="370" x2="87" y2="376" stroke="#1e5c5c" stroke-width="0.6" opacity="0.4"/>
+                <line x1="105" y1="370" x2="105" y2="376" stroke="#1e5c5c" stroke-width="0.6" opacity="0.4"/>
+              </g>
+
             </svg>
           </div>
 
-          <!-- Accent image — reef/underwater scene -->
-          <div class="about-img-accent">
-            <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:100%">
-              <defs>
-                <linearGradient id="reef-grad" x1="0%" y1="0%" x2="0%" y2="100%">
-                  <stop offset="0%" style="stop-color:#1e5c5c"/>
-                  <stop offset="100%" style="stop-color:#0d2b1e"/>
-                </linearGradient>
-              </defs>
-              <rect width="200" height="200" fill="url(#reef-grad)"/>
-              <!-- Coral branches -->
-              <g fill="none" stroke-linecap="round">
-                <path d="M30 180 Q25 150 30 120 Q35 90 28 70" stroke="#d9644a" stroke-width="3"/>
-                <path d="M30 140 Q15 125 10 110" stroke="#d9644a" stroke-width="2"/>
-                <path d="M30 120 Q45 105 50 90" stroke="#d9644a" stroke-width="2"/>
-                <path d="M30 155 Q48 145 55 130" stroke="#f0956e" stroke-width="2"/>
-              </g>
-              <g fill="none" stroke-linecap="round">
-                <path d="M80 180 Q85 145 78 110 Q73 80 80 55" stroke="#4ab5b5" stroke-width="3"/>
-                <path d="M78 125 Q60 110 55 95" stroke="#4ab5b5" stroke-width="2"/>
-                <path d="M78 110 Q96 100 100 85" stroke="#4ab5b5" stroke-width="2"/>
-                <path d="M79 145 Q62 132 58 120" stroke="#9dd8d8" stroke-width="2"/>
-              </g>
-              <g fill="none" stroke-linecap="round">
-                <path d="M140 180 Q133 148 138 115 Q142 88 135 65" stroke="#d9644a" stroke-width="2.5"/>
-                <path d="M138 130 Q120 118 115 100" stroke="#d9644a" stroke-width="2"/>
-                <path d="M137 115 Q155 105 160 88" stroke="#f0956e" stroke-width="2"/>
-              </g>
-              <!-- Fan coral -->
-              <ellipse cx="170" cy="130" rx="20" ry="35" fill="none" stroke="rgba(240,149,110,0.5)" stroke-width="1"/>
-              <ellipse cx="170" cy="130" rx="14" ry="25" fill="none" stroke="rgba(240,149,110,0.3)" stroke-width="1"/>
-              <!-- Fish -->
-              <g transform="translate(110,70)">
-                <ellipse cx="0" cy="0" rx="12" ry="6" fill="rgba(212,136,42,0.8)"/>
-                <path d="M-12,0 L-18,6 L-18,-6Z" fill="rgba(212,136,42,0.6)"/>
-                <circle cx="7" cy="-1" r="2" fill="rgba(0,0,0,0.5)"/>
-              </g>
-              <g transform="translate(50,50) scale(0.7)">
-                <ellipse cx="0" cy="0" rx="12" ry="6" fill="rgba(74,181,181,0.7)"/>
-                <path d="M-12,0 L-18,6 L-18,-6Z" fill="rgba(74,181,181,0.5)"/>
-                <circle cx="7" cy="-1" r="2" fill="rgba(0,0,0,0.5)"/>
-              </g>
-              <!-- Light rays -->
-              <path d="M60 0 L50 80" stroke="rgba(155,216,216,0.08)" stroke-width="8"/>
-              <path d="M100 0 L95 100" stroke="rgba(155,216,216,0.06)" stroke-width="6"/>
-              <path d="M150 0 L145 90" stroke="rgba(155,216,216,0.05)" stroke-width="10"/>
-            </svg>
-          </div>
-
-          <!-- Pull quote -->
-          <div class="about-pull-quote" aria-hidden="true">
+          <div class="about-pull-quote" id="fbv-quote" aria-hidden="true">
             Dolphins every morning. Sloths most afternoons.
           </div>
+
         </div>
       </div>
 
@@ -1505,5 +1590,58 @@
 <script src="member/config.js"></script>
 <script src="utils.js"></script>
 <script src="script.js"></script>
+
+<script>
+/* ── About section scroll-build ── */
+(function() {
+  if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    document.querySelectorAll('.fbv-fade').forEach(el => { el.style.opacity = 1; });
+    var q = document.getElementById('fbv-quote');
+    if (q) q.classList.add('is-visible');
+    return;
+  }
+
+  var scene   = document.getElementById('fbv-scene');
+  var section = document.getElementById('about');
+  var quote   = document.getElementById('fbv-quote');
+  if (!scene || !section) return;
+
+  var fades = scene.querySelectorAll('.fbv-fade');
+  var FADE_DURATION = 0.08;
+
+  function update() {
+    var rect  = section.getBoundingClientRect();
+    var winH  = window.innerHeight || document.documentElement.clientHeight;
+    var triggerStart = winH * 0.85;
+    var triggerEnd   = -rect.height + winH * 0.3;
+    var range    = triggerStart - triggerEnd;
+    var progress = Math.max(0, Math.min(1, (triggerStart - rect.top) / range));
+
+    fades.forEach(function(el) {
+      var stage = parseFloat(el.dataset.stage);
+      var local = Math.max(0, Math.min(1, (progress - stage) / FADE_DURATION));
+      el.style.opacity = local;
+    });
+
+    if (quote) {
+      if (progress > 0.5) quote.classList.add('is-visible');
+      else                 quote.classList.remove('is-visible');
+    }
+  }
+
+  var ticking = false;
+  function onScroll() {
+    if (!ticking) {
+      window.requestAnimationFrame(function() { update(); ticking = false; });
+      ticking = true;
+    }
+  }
+
+  update();
+  window.addEventListener('scroll', onScroll, { passive: true });
+  window.addEventListener('resize', update);
+  setTimeout(update, 100);
+})();
+</script>
 </body>
 </html>
