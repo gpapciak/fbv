@@ -186,18 +186,18 @@
               <rect width="320" height="420" fill="url(#b3-sky)"/>
 
               <!-- STAGE 1: Sun -->
-              <g class="fbv-fade" data-stage="0.03">
+              <g class="fbv-fade" data-stage="0.02">
                 <ellipse cx="122" cy="78" rx="115" ry="92" fill="url(#b3-sun)"/>
                 <circle cx="122" cy="78" r="20" fill="#fbe5c0" opacity="0.92"/>
               </g>
 
               <!-- STAGE 2: Atmospheric mist over horizon -->
-              <g class="fbv-fade" data-stage="0.1">
+              <g class="fbv-fade" data-stage="0.07">
                 <path d="M0 148 Q60 142 120 146 Q180 150 240 142 Q290 138 320 144 L320 168 Q290 170 240 164 Q180 158 120 166 Q60 170 0 164 Z" fill="url(#b3-mist)"/>
               </g>
 
               <!-- STAGE 3: Far canopy / island silhouette -->
-              <g class="fbv-fade" data-stage="0.15">
+              <g class="fbv-fade" data-stage="0.10">
                 <path d="M0 168 Q40 152 90 160 Q140 168 180 154 Q220 146 260 156 Q290 162 320 154 L320 195 L0 195 Z" fill="url(#b3-canopy-far)" opacity="0.92"/>
                 <g fill="#2d5a3d" opacity="0.55">
                   <circle cx="40" cy="172" r="14"/>
@@ -209,7 +209,7 @@
               </g>
 
               <!-- STAGE 4: Bay water + ripples -->
-              <g class="fbv-fade" data-stage="0.22">
+              <g class="fbv-fade" data-stage="0.14">
                 <path d="M0 195 L320 195 L320 360 Q260 358 220 360 Q160 362 100 358 Q50 356 0 358 Z" fill="url(#b3-water)"/>
                 <path d="M0 195 Q60 198 120 195 Q180 192 240 196 Q290 198 320 195 L320 205 L0 205 Z" fill="#5a9494" opacity="0.55"/>
                 <g stroke="#9dd8d8" stroke-width="1.2" fill="none" opacity="0.55">
@@ -223,7 +223,7 @@
               </g>
 
               <!-- STAGE 5: Sun reflection on water -->
-              <g class="fbv-fade" data-stage="0.3">
+              <g class="fbv-fade" data-stage="0.20">
                 <path d="M62 200 Q82 197 102 200 Q122 203 142 200 Q127 205 102 205 Q82 205 62 202 Z" fill="#fbe5c0" opacity="0.65"/>
                 <path d="M72 220 Q92 218 112 220 Q132 223 142 222 Q127 227 107 227 Q87 226 72 223 Z" fill="#fbe5c0" opacity="0.5"/>
                 <path d="M82 245 Q97 243 112 245 Q127 248 132 248 Q117 252 102 251 Q89 249 82 247 Z" fill="#fbe5c0" opacity="0.4"/>
@@ -240,7 +240,7 @@
               </g>
 
               <!-- STAGE 6: Dolphins -->
-              <g class="fbv-fade" data-stage="0.36">
+              <g class="fbv-fade" data-stage="0.24">
                 <g transform="translate(40,265)">
                   <path d="M0,4 Q10,-4 24,-1 Q32,2 35,5 Q24,8 0,4 Z" fill="#0d2b1e"/>
                   <path d="M24,-1 Q30,-9 35,-4 Q28,1 24,-1 Z" fill="#0d2b1e"/>
@@ -266,7 +266,7 @@
               </g>
 
               <!-- STAGE 7: Shoreline -->
-              <g class="fbv-fade" data-stage="0.4">
+              <g class="fbv-fade" data-stage="0.27">
                 <path d="M0 360 Q60 354 120 360 Q180 366 240 358 Q290 352 320 358 L320 420 L0 420 Z" fill="url(#b3-jungle-near)"/>
                 <g stroke="#0d2b1e" stroke-width="0.8" fill="none" stroke-linecap="round" opacity="0.85">
                   <path d="M15 360 L15 364"/><path d="M22 359 L22 363"/><path d="M30 361 L30 365"/>
@@ -286,7 +286,7 @@
               </g>
 
               <!-- STAGE 8: Foreground palms -->
-              <g class="fbv-fade" data-stage="0.45">
+              <g class="fbv-fade" data-stage="0.30">
                 <g stroke="#3d2510" stroke-width="3" fill="none" stroke-linecap="round">
                   <path d="M210 380 Q208 350 212 320 Q214 295 212 270"/>
                 </g>
@@ -317,7 +317,7 @@
               </g>
 
               <!-- STAGE 8b: Sloth -->
-              <g class="fbv-fade" data-stage="0.55">
+              <g class="fbv-fade" data-stage="0.37">
                 <g transform="translate(212,278)">
                   <ellipse cx="0" cy="3" rx="8" ry="5.5" fill="#a0714f"/>
                   <ellipse cx="0" cy="5" rx="6" ry="3.5" fill="#c9a87a" opacity="0.6"/>
@@ -334,7 +334,7 @@
               </g>
 
               <!-- STAGE 9: Dock -->
-              <g class="fbv-fade" data-stage="0.5">
+              <g class="fbv-fade" data-stage="0.34">
                 <rect x="50" y="358" width="2" height="12" fill="#6b3f22"/>
                 <rect x="68" y="358" width="2" height="12" fill="#6b3f22"/>
                 <rect x="86" y="358" width="2" height="12" fill="#6b3f22"/>
@@ -1624,8 +1624,8 @@
     });
 
     if (quote) {
-      if (progress > 0.5) quote.classList.add('is-visible');
-      else                 quote.classList.remove('is-visible');
+      if (progress > 0.35) quote.classList.add('is-visible');
+      else                  quote.classList.remove('is-visible');
     }
   }
 
